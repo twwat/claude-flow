@@ -169,6 +169,10 @@ const trainCommand: Command = {
       spinner.succeed(`Training complete: ${epochs} epochs in ${(totalTime / 1000).toFixed(1)}s`);
 
       output.writeln();
+      // Flush patterns to disk to ensure persistence
+      flushPatterns();
+      const persistence = getPersistenceStatus();
+
       output.printTable({
         columns: [
           { key: 'metric', header: 'Metric', width: 26 },
@@ -186,8 +190,12 @@ const trainCommand: Command = {
           { metric: 'SONA Adaptation', value: `${(benchmark.avgMs * 1000).toFixed(2)}μs avg` },
           { metric: 'Target Met (<0.05ms)', value: benchmark.targetMet ? output.success('Yes') : output.warning('No') },
           { metric: 'ReasoningBank Size', value: stats.reasoningBankSize.toLocaleString() },
+          { metric: 'Persisted To', value: output.dim(persistence.dataDir) },
         ],
       });
+
+      output.writeln();
+      output.writeln(output.success(`✓ ${patternsRecorded} patterns saved to ${persistence.patternsFile}`));
 
       return {
         success: true,
@@ -197,7 +205,8 @@ const trainCommand: Command = {
           trajectoriesCompleted,
           totalTime,
           benchmark,
-          stats
+          stats,
+          persistence
         }
       };
     } catch (error) {
