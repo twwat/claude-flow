@@ -169,6 +169,13 @@ async function handleMessage(message) {
         };
 
       default:
+        // Silently ignore unknown notifications (no id = notification per JSON-RPC spec)
+        // This prevents -32601 errors that cause some clients to disconnect
+        if (!message.id || message.method.startsWith('notifications/')) {
+          console.error(`[${new Date().toISOString()}] DEBUG [claude-flow-mcp] Ignored notification: ${message.method}`);
+          return null;
+        }
+        // Only return error for actual RPC calls (with id)
         return {
           jsonrpc: '2.0',
           id: message.id,
