@@ -891,6 +891,7 @@ export function generateHelpers(options: InitOptions): Record<string, string> {
     helpers['session.js'] = generateCrossPlatformSessionManager();
     helpers['router.js'] = generateAgentRouter();
     helpers['memory.js'] = generateMemoryHelper();
+    helpers['attention.js'] = generateAttentionHelper();
 
     // Windows-specific scripts
     helpers['daemon-manager.ps1'] = generateWindowsDaemonManager();
