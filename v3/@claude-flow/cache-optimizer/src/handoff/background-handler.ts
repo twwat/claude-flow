@@ -366,7 +366,7 @@ main().catch(e => {
             proc.response = JSON.parse(output);
             proc.status = proc.response?.status || 'completed';
             proc.completedAt = status.completedAt || Date.now();
-            return proc.response;
+            return proc.response || null;
           } catch {
             proc.status = 'failed';
             return null;
