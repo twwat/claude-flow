@@ -108,9 +108,9 @@ export interface GNNPrediction {
 }
 
 /**
- * Learning metrics
+ * GNN-specific learning metrics
  */
-export interface LearningMetrics {
+export interface GNNLearningMetrics {
   /** Total edges in graph */
   totalEdges: number;
   /** Total nodes in graph */
