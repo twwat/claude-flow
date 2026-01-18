@@ -344,7 +344,7 @@ export class GraphBuilder {
     const clusters = this.kMeansClustering(entries, nodes, numClusters);
 
     // Connect nodes within same cluster
-    for (const [clusterId, nodeIds] of clusters) {
+    for (const [_clusterId, nodeIds] of clusters) {
       for (let i = 0; i < nodeIds.length; i++) {
         for (let j = i + 1; j < nodeIds.length; j++) {
           const nodeA = nodes.get(nodeIds[i]);
