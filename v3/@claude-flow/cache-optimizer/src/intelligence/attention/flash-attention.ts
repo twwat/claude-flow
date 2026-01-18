@@ -19,7 +19,6 @@ import { DEFAULT_CONFIG } from '../../types.js';
  */
 export class FlashAttention {
   private config: FlashAttentionConfig;
-  private queryEmbedding: Float32Array | null = null;
 
   constructor(config: Partial<FlashAttentionConfig> = {}) {
     this.config = {
