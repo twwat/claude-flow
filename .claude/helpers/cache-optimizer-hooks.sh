@@ -188,7 +188,8 @@ train_gnn() {
     local sessions=$(jq '.trainingSessions' "$state_file" 2>/dev/null || echo 0)
     sessions=$((sessions + 1))
 
-    jq ".trainingSessions = $sessions | .lastTraining = \"$(date -Iseconds)\" | .lastTopology = \"$topology\"" "$state_file" > "${state_file}.tmp" && mv "${state_file}.tmp" "$state_file"
+    local train_date=$(get_iso_date)
+    jq ".trainingSessions = $sessions | .lastTraining = \"$train_date\" | .lastTopology = \"$topology\"" "$state_file" > "${state_file}.tmp" && mv "${state_file}.tmp" "$state_file"
   fi
 
   # Archive old events (keep last 1000)
