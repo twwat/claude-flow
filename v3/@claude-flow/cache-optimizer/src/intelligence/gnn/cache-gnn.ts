@@ -216,7 +216,7 @@ export class CacheGNN {
   private graph: CacheGraph;
   private config: GNNLayerConfig;
   private _learningRate: number;
-  private metrics: LearningMetrics;
+  private metrics: GNNLearningMetrics;
   private weights: Map<string, number[][]>;
 
   // Access pattern tracking
@@ -791,7 +791,7 @@ export class CacheGNN {
   /**
    * Get learning metrics
    */
-  getMetrics(): LearningMetrics {
+  getMetrics(): GNNLearningMetrics {
     return { ...this.metrics };
   }
 
@@ -857,7 +857,7 @@ export class CacheGNN {
   exportGraph(): {
     nodes: Array<[string, CacheNode]>;
     edges: CacheEdge[];
-    metrics: LearningMetrics;
+    metrics: GNNLearningMetrics;
   } {
     return {
       nodes: Array.from(this.graph.nodes.entries()),
@@ -872,7 +872,7 @@ export class CacheGNN {
   importGraph(data: {
     nodes: Array<[string, CacheNode]>;
     edges: CacheEdge[];
-    metrics?: LearningMetrics;
+    metrics?: GNNLearningMetrics;
   }): void {
     this.graph.nodes = new Map(data.nodes);
     this.graph.edges = data.edges;
