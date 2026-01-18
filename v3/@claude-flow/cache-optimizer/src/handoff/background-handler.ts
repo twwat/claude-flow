@@ -7,7 +7,7 @@
 
 import { spawn, type ChildProcess } from 'child_process';
 import { randomUUID } from 'crypto';
-import { mkdir, writeFile, readFile, unlink, access } from 'fs/promises';
+import { mkdir, writeFile, readFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { EventEmitter } from 'events';
 import type {
