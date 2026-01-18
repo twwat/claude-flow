@@ -551,7 +551,7 @@ export class CacheOptimizer {
     return false;
   }
 
-  private async proactivePrune(incomingTokens: number): Promise<void> {
+  private async proactivePrune(_incomingTokens: number): Promise<void> {
     const context: ScoringContext = {
       currentQuery: '',
       activeFiles: [],
