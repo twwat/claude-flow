@@ -198,7 +198,7 @@ This profile configures the following hooks:
 ${Object.entries(profile.hooks).map(([hookName, entries]) => {
   if (!entries || entries.length === 0) return '';
   return `#### ${hookName}
-${entries.map(e => `- \`${e.command}\`\n  ${e.description || ''}`).join('\n')}`;
+${entries.map((e: { command: string; description?: string }) => `- \`${e.command}\`\n  ${e.description || ''}`).join('\n')}`;
 }).filter(Boolean).join('\n\n')}
 
 ### Programmatic API
