@@ -150,14 +150,6 @@ export async function handlePostToolUse(
   let compactionPrevented = false;
 
   if (utilization > 0.6) { // Soft threshold
-    const context: ScoringContext = {
-      currentQuery: '',
-      activeFiles: filePath ? [filePath] : [],
-      activeTools: [toolName.toLowerCase()],
-      sessionId,
-      timestamp: Date.now(),
-    };
-
     const hookResult = await optimizer.onUserPromptSubmit('', sessionId);
     tokensFreed = hookResult.tokensFreed;
     compactionPrevented = hookResult.compactionPrevented;
