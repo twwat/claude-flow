@@ -8,8 +8,8 @@
 
 import { spawn, type ChildProcess } from 'child_process';
 import { randomUUID } from 'crypto';
-import { mkdir, writeFile, unlink, readFile } from 'fs/promises';
-import { join, resolve, basename } from 'path';
+import { mkdir, writeFile, unlink } from 'fs/promises';
+import { join, resolve } from 'path';
 
 // =============================================================================
 // Security Utilities
