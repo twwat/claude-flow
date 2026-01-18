@@ -347,6 +347,7 @@ Claude-Flow v3 introduces **self-learning neural capabilities** that no other ag
 | **Persistent Memory** | ✅ SQLite + AgentDB + PostgreSQL | ⛔ | ⛔ | ⛔ | Limited |
 | **Cross-Session Context** | ✅ Full restoration | ⛔ | ⛔ | ⛔ | ⛔ |
 | **GNN/Attention in SQL** | ✅ 39 attention mechanisms | ⛔ | ⛔ | ⛔ | ⛔ |
+| **Zero-Compaction Cache** | ✅ Cache Optimizer | ⛔ | ⛔ | ⛔ | ⛔ |
 
 #### 🐝 Swarm & Coordination
 
