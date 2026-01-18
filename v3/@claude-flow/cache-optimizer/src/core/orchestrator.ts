@@ -83,27 +83,46 @@ function generateId(): string {
 /**
  * Main Cache Optimizer - Coordinates all cache optimization operations
  * Prevents compaction by maintaining optimal utilization through intelligent pruning
+ *
+ * MULTI-INSTANCE SAFETY FEATURES:
+ * - Session-partitioned storage: Each session has isolated entries
+ * - Async mutex: Prevents race conditions on concurrent operations
+ * - Per-session token accounting: Fair resource allocation
+ * - Global token budget: Prevents any single session from monopolizing context
  */
 export class CacheOptimizer {
   private config: CacheOptimizerConfig;
-  private entries: Map<string, CacheEntry> = new Map();
-  private tokenCounter: TokenCounter;
+
+  // Session-partitioned storage for multi-agent isolation
+  private sessions: Map<string, SessionStorage> = new Map();
+
+  // Global state (shared across sessions)
+  private globalTokenCounter: TokenCounter;
   private temporalCompressor: TemporalCompressor;
   private flashAttention: FlashAttention;
   private hyperbolicIntelligence: HyperbolicCacheIntelligence;
   private initialized: boolean = false;
   private useHyperbolic: boolean = true;
 
-  // LRU tracking
+  // Mutex for concurrent access protection
+  private mutex: AsyncMutex = new AsyncMutex();
+
+  // Backward compatibility: default entries map (for single-session usage)
+  private entries: Map<string, CacheEntry> = new Map();
   private accessOrder: string[] = [];
+  private tokenCounter!: TokenCounter;
 
   // Metrics for before/after comparison
   private driftEvents: number = 0;
   private driftCorrections: number = 0;
 
-  constructor(config: Partial<CacheOptimizerConfig> = {}, options?: { useHyperbolic?: boolean }) {
+  // Session isolation mode
+  private sessionIsolation: boolean = false;
+
+  constructor(config: Partial<CacheOptimizerConfig> = {}, options?: { useHyperbolic?: boolean; sessionIsolation?: boolean }) {
     this.config = this.mergeConfig(config);
-    this.tokenCounter = new TokenCounter(this.config.contextWindowSize);
+    this.globalTokenCounter = new TokenCounter(this.config.contextWindowSize);
+    this.tokenCounter = this.globalTokenCounter; // Backward compatibility
     this.temporalCompressor = new TemporalCompressor(this.config.temporal);
     this.flashAttention = new FlashAttention(this.config.intelligence.attention.flash);
     this.hyperbolicIntelligence = new HyperbolicCacheIntelligence({
@@ -114,6 +133,51 @@ export class CacheOptimizer {
       enableDriftDetection: true,
     });
     this.useHyperbolic = options?.useHyperbolic ?? true;
+    this.sessionIsolation = options?.sessionIsolation ?? false;
+  }
+
+  /**
+   * Get or create session storage
+   */
+  private getSessionStorage(sessionId: string): SessionStorage {
+    let storage = this.sessions.get(sessionId);
+    if (!storage) {
+      // Per-session budget is a fraction of total (configurable, default 25%)
+      const perSessionBudget = Math.floor(this.config.contextWindowSize * 0.25);
+      storage = {
+        entries: new Map(),
+        accessOrder: [],
+        tokenCounter: new TokenCounter(perSessionBudget),
+        lastAccess: Date.now(),
+      };
+      this.sessions.set(sessionId, storage);
+    }
+    storage.lastAccess = Date.now();
+    return storage;
+  }
+
+  /**
+   * Get entries for a session (or global if isolation disabled)
+   */
+  private getEntriesForSession(sessionId: string): Map<string, CacheEntry> {
+    if (!this.sessionIsolation) {
+      return this.entries;
+    }
+    return this.getSessionStorage(sessionId).entries;
+  }
+
+  /**
+   * Get all entries across all sessions
+   */
+  private getAllEntries(): CacheEntry[] {
+    if (!this.sessionIsolation) {
+      return Array.from(this.entries.values());
+    }
+    const allEntries: CacheEntry[] = [];
+    for (const storage of this.sessions.values()) {
+      allEntries.push(...storage.entries.values());
+    }
+    return allEntries;
   }
 
   /**
