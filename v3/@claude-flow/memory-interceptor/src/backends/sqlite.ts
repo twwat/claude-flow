@@ -192,7 +192,7 @@ export class SQLiteBackend implements MemoryBackend {
     sql += ` ORDER BY timestamp DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
-    const result = this.db.exec(sql, params);
+    const result = this.db.exec(sql, params as (string | number | null | Uint8Array)[]);
 
     if (result.length === 0) {
       return [];
