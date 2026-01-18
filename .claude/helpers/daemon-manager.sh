@@ -14,6 +14,7 @@ mkdir -p "$PID_DIR" "$LOG_DIR" "$METRICS_DIR"
 # PID files
 SWARM_MONITOR_PID="$PID_DIR/swarm-monitor.pid"
 METRICS_DAEMON_PID="$PID_DIR/metrics-daemon.pid"
+CACHE_OPTIMIZER_PID="$PID_DIR/cache-optimizer.pid"
 
 # Log files
 DAEMON_LOG="$LOG_DIR/daemon.log"
