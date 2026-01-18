@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "memory-interceptor": "./dist/cli.js"
+    "memory-interceptor": "./dist/cli.js",
+    "session-pruner": "./dist/pruner-cli.js"
   },
   "scripts": {
     "build": "tsc",
