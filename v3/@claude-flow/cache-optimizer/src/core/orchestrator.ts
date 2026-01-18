@@ -544,8 +544,21 @@ export class CacheOptimizer {
 
   /**
    * Execute pruning based on decision
+   * Uses mutex to prevent race conditions in multi-agent scenarios
    */
   async prune(decision?: PruningDecision): Promise<PruningResult> {
+    const release = await this.mutex.acquire();
+    try {
+      return await this.pruneInternal(decision);
+    } finally {
+      release();
+    }
+  }
+
+  /**
+   * Internal prune implementation (called within mutex)
+   */
+  private async pruneInternal(decision?: PruningDecision): Promise<PruningResult> {
     const startTime = Date.now();
     const context: ScoringContext = {
       currentQuery: '',
@@ -564,22 +577,56 @@ export class CacheOptimizer {
     let demotedCount = 0;
     let tokensFreed = 0;
 
-    // Execute pruning
+    // Execute pruning across all session storages
     for (const id of decision.toPrune) {
-      const entry = this.entries.get(id);
+      // Check in default entries
+      let entry = this.entries.get(id);
       if (entry) {
         tokensFreed += entry.compressed?.compressedTokens ?? entry.tokens;
         this.tokenCounter.removeEntry(entry);
         this.entries.delete(id);
         this.removeFromAccessOrder(id);
         prunedCount++;
+        continue;
+      }
+
+      // Check in session storages
+      if (this.sessionIsolation) {
+        for (const [sessionId, storage] of this.sessions) {
+          entry = storage.entries.get(id);
+          if (entry) {
+            tokensFreed += entry.compressed?.compressedTokens ?? entry.tokens;
+            this.tokenCounter.removeEntry(entry);
+            storage.tokenCounter.removeEntry(entry);
+            storage.entries.delete(id);
+            const idx = storage.accessOrder.indexOf(id);
+            if (idx > -1) storage.accessOrder.splice(idx, 1);
+            prunedCount++;
+            break;
+          }
+        }
       }
     }
 
     // Execute compression and demotion
     for (const id of decision.toCompress) {
-      const entry = this.entries.get(id);
-      if (entry && !decision.toPrune.includes(id)) {
+      if (decision.toPrune.includes(id)) continue;
+
+      // Find entry in default or session storage
+      let entry = this.entries.get(id);
+      let sessionStorage: SessionStorage | undefined;
+
+      if (!entry && this.sessionIsolation) {
+        for (const storage of this.sessions.values()) {
+          entry = storage.entries.get(id);
+          if (entry) {
+            sessionStorage = storage;
+            break;
+          }
+        }
+      }
+
+      if (entry) {
         const oldTokens = entry.compressed?.compressedTokens ?? entry.tokens;
         const targetTier = this.getNextColdTier(entry.tier);
 
@@ -589,6 +636,9 @@ export class CacheOptimizer {
           entry.compressed = compressed;
           entry.tier = targetTier;
           this.tokenCounter.updateEntry(oldEntry, entry);
+          if (sessionStorage) {
+            sessionStorage.tokenCounter.updateEntry(oldEntry, entry);
+          }
           tokensFreed += oldTokens - compressed.compressedTokens;
           compressedCount++;
           demotedCount++;
