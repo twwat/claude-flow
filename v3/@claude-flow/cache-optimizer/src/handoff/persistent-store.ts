@@ -138,12 +138,18 @@ const DEFAULT_CONFIG: PersistentStoreConfig = {
  *
  * Note: Uses JSON file storage as fallback when sql.js is not available.
  * In production, would use sql.js WASM for proper SQLite support.
+ *
+ * MULTI-PROCESS SAFETY:
+ * - File locking prevents concurrent writes
+ * - Atomic writes via temp file + rename
+ * - Stale lock detection and cleanup
  */
 export class PersistentStore {
   private config: PersistentStoreConfig;
   private initialized: boolean = false;
   private autoSaveTimer?: NodeJS.Timeout;
   private dirty: boolean = false;
+  private fileLock: FileLock;
 
   // In-memory cache
   private queueCache: Map<string, QueueRecord> = new Map();
