@@ -37,7 +37,6 @@ interface BackgroundProcess {
 export class BackgroundHandler extends EventEmitter {
   private workDir: string;
   private processes: Map<string, BackgroundProcess> = new Map();
-  private maxConcurrent: number;
   private pollInterval: number;
   private initialized: boolean = false;
 
