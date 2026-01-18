@@ -874,11 +874,17 @@ export interface HandoffQueueItem {
   /** Started timestamp (if processing) */
   startedAt?: number;
 
+  /** Completed timestamp */
+  completedAt?: number;
+
   /** Status */
   status: HandoffStatus;
 
   /** Response (if completed) */
   response?: HandoffResponse;
+
+  /** Retry count */
+  retries?: number;
 }
 
 export interface HandoffMetrics {
