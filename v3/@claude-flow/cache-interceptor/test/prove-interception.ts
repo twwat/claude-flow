@@ -50,7 +50,7 @@ async function main() {
   // Step 2: Import and install interceptor
   console.log(`${YELLOW}▶ STEP 2: Install cache interceptor${RESET}`);
 
-  const interceptor = await import('../src/interceptor');
+  const interceptor = await import('../dist/interceptor');
   await interceptor.install();
 
   console.log(`  ${GREEN}✓ Interceptor installed - fs.readFileSync and fs.appendFileSync patched${RESET}\n`);
