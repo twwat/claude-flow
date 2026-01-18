@@ -27,9 +27,9 @@ export interface InitOptions {
   /** Configuration profile to use */
   profile?: ProfileId;
   /** Custom cache config overrides */
-  cacheConfig?: Partial<CacheOptimizerConfig>;
+  cacheConfig?: ProfileCacheConfig;
   /** Custom handoff config overrides */
-  handoffConfig?: Partial<HandoffConfig>;
+  handoffConfig?: ProfileHandoffConfig;
   /** Project root path */
   projectRoot?: string;
   /** Replace existing hooks (vs merge) */
