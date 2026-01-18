@@ -49,6 +49,13 @@ export class HandoffManager {
   private metrics: HandoffMetrics;
   private initialized: boolean = false;
 
+  // Enhanced features
+  private circuitBreakers: CircuitBreakerRegistry;
+  private rateLimiters: RateLimiterRegistry;
+  private persistentStore: PersistentStore;
+  private webhooks: WebhookHandler;
+  private streaming: StreamingHandler;
+
   constructor(config?: Partial<HandoffConfig>) {
     // Default configuration
     const defaultConfig: HandoffConfig = {
