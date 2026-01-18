@@ -344,7 +344,7 @@ export class DriftDetector {
       embedding[36] += ageNorm / entries.length;
 
       // Access pattern encoding (dims 40-50)
-      const accessRate = entry.accessCount / Math.max(1, (Date.now() - entry.createdAt) / 60000);
+      const accessRate = entry.accessCount / Math.max(1, (Date.now() - entry.timestamp) / 60000);
       embedding[40] += Math.min(accessRate, 1) / entries.length;
 
       // Token distribution (dims 50-64)
