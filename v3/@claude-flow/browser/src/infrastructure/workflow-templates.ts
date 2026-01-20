@@ -141,7 +141,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       { id: 'next-email', action: 'click', target: '#identifierNext, [type="submit"]', waitAfter: 1500 },
       { id: 'enter-password', action: 'fill', target: '[type="password"], [name="password"]', value: '\${password}' },
       { id: 'submit', action: 'click', target: '#passwordNext, [type="submit"]', waitAfter: 3000 },
-      { id: 'wait-redirect', action: 'wait', target: '${successUrl}', onError: 'continue' },
+      { id: 'wait-redirect', action: 'wait', target: '\${successUrl}', onError: 'continue' },
     ],
   },
   {
