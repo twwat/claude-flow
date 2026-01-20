@@ -2862,6 +2862,10 @@ The system **remembers** what works and applies it to future similar tasks.
 
 ---
 
+## 💻 Programmatic Usage
+
+Use Claude-Flow packages directly in your applications.
+
 <details>
 <summary>💻 <strong>Programmatic SDK</strong> — Use Claude-Flow in Your Code</summary>
 
