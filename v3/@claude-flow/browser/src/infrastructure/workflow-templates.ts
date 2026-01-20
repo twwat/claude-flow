@@ -269,11 +269,11 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     steps: [
       { id: 'set-viewport', action: 'eval', value: `
         (() => {
-          const [w, h] = '${viewport}'.split('x').map(Number);
+          const [w, h] = '\${viewport}'.split('x').map(Number);
           return { width: w, height: h };
         })()
       `},
-      { id: 'test-urls', action: 'eval', value: `'${urls}'.split(',').map(u => u.trim())` },
+      { id: 'test-urls', action: 'eval', value: `'\${urls}'.split(',').map(u => u.trim())` },
     ],
   },
   {
