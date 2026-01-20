@@ -771,6 +771,87 @@ function getTestStats() {
   return { testFiles, testCases };
 }
 
+// Get integration status (MCP servers, external connections)
+function getIntegrationStatus() {
+  let mcpServers = { total: 0, enabled: 0, names: [] };
+  let hasDatabase = false;
+  let hasCache = false;
+  let hasApi = false;
+
+  // Check for MCP servers in settings
+  const settingsPaths = [
+    path.join(process.cwd(), '.claude', 'settings.json'),
+    path.join(process.cwd(), '.claude', 'settings.local.json'),
+  ];
+
+  for (const settingsPath of settingsPaths) {
+    if (fs.existsSync(settingsPath)) {
+      try {
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+
+        // Check mcpServers object
+        if (settings.mcpServers && typeof settings.mcpServers === 'object') {
+          const servers = Object.keys(settings.mcpServers);
+          mcpServers.total = servers.length;
+          mcpServers.names = servers;
+
+          // Check enabledMcpjsonServers for enabled count
+          if (settings.enabledMcpjsonServers && Array.isArray(settings.enabledMcpjsonServers)) {
+            mcpServers.enabled = settings.enabledMcpjsonServers.filter(s => servers.includes(s)).length;
+          } else {
+            mcpServers.enabled = mcpServers.total; // Assume all enabled if not specified
+          }
+        }
+        break;
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  // Also check .mcp.json or mcp.json
+  const mcpConfigPaths = [
+    path.join(process.cwd(), '.mcp.json'),
+    path.join(process.cwd(), 'mcp.json'),
+    path.join(require('os').homedir(), '.claude', 'mcp.json'),
+  ];
+
+  for (const mcpPath of mcpConfigPaths) {
+    if (fs.existsSync(mcpPath) && mcpServers.total === 0) {
+      try {
+        const config = JSON.parse(fs.readFileSync(mcpPath, 'utf-8'));
+        if (config.mcpServers) {
+          const servers = Object.keys(config.mcpServers);
+          mcpServers.total = servers.length;
+          mcpServers.names = servers;
+          mcpServers.enabled = servers.length;
+        }
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  // Check for database (AgentDB, SQLite, etc.)
+  const dbPaths = [
+    path.join(process.cwd(), '.swarm', 'memory.db'),
+    path.join(process.cwd(), '.claude-flow', 'memory.db'),
+    path.join(process.cwd(), 'data', 'memory.db'),
+  ];
+  hasDatabase = dbPaths.some(p => fs.existsSync(p));
+
+  // Check for cache
+  const cachePaths = [
+    path.join(process.cwd(), '.claude-flow', 'cache'),
+    path.join(process.cwd(), '.cache'),
+    path.join(process.cwd(), 'node_modules', '.cache'),
+  ];
+  hasCache = cachePaths.some(p => fs.existsSync(p));
+
+  // Check for API configuration (env vars or config)
+  try {
+    hasApi = !!(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY);
+  } catch (e) { /* ignore */ }
+
+  return { mcpServers, hasDatabase, hasCache, hasApi };
+}
+
 // Get git status (uncommitted changes, untracked files) - cross-platform
 function getGitStatus() {
   let modified = 0;

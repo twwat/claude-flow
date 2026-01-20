@@ -751,6 +751,129 @@ function getTestStats() {
   return { testFiles, testCases };
 }
 
+// Get git status (uncommitted changes, untracked files) - cross-platform
+function getGitStatus() {
+  let modified = 0;
+  let untracked = 0;
+  let staged = 0;
+  let ahead = 0;
+  let behind = 0;
+  const isWindows = process.platform === 'win32';
+
+  try {
+    // Get modified and staged counts - works on all platforms
+    const status = execSync('git status --porcelain', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'], // Suppress stderr
+      timeout: 5000,
+    });
+    const lines = status.trim().split('\n').filter(l => l);
+    for (const line of lines) {
+      const code = line.substring(0, 2);
+      if (code.includes('M') || code.includes('D') || code.includes('R')) {
+        if (code[0] !== ' ') staged++;
+        if (code[1] !== ' ') modified++;
+      }
+      if (code.includes('?')) untracked++;
+      if (code.includes('A')) staged++;
+    }
+
+    // Get ahead/behind - may fail if no upstream
+    try {
+      const abStatus = execSync('git rev-list --left-right --count HEAD...@{upstream}', {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 5000,
+      });
+      const parts = abStatus.trim().split(/\s+/);
+      ahead = parseInt(parts[0]) || 0;
+      behind = parseInt(parts[1]) || 0;
+    } catch (e) { /* no upstream or error - that's ok */ }
+
+  } catch (e) {
+    // Not a git repo or git not installed - return zeros
+  }
+
+  return { modified, untracked, staged, ahead, behind };
+}
+
+// Get session statistics
+function getSessionStats() {
+  let sessionStart = null;
+  let duration = '';
+  let lastActivity = '';
+  let operationsCount = 0;
+
+  // Check for session file
+  const sessionPaths = [
+    path.join(process.cwd(), '.claude-flow', 'session.json'),
+    path.join(process.cwd(), '.claude', 'session.json'),
+  ];
+
+  for (const sessPath of sessionPaths) {
+    if (fs.existsSync(sessPath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(sessPath, 'utf-8'));
+        if (data.startTime) {
+          sessionStart = new Date(data.startTime);
+          const now = new Date();
+          const diffMs = now.getTime() - sessionStart.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 60) {
+            duration = `${diffMins}m`;
+          } else {
+            const hours = Math.floor(diffMins / 60);
+            const mins = diffMins % 60;
+            duration = `${hours}h${mins}m`;
+          }
+        }
+        if (data.lastActivity) {
+          const last = new Date(data.lastActivity);
+          const now = new Date();
+          const diffMs = now.getTime() - last.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 1) lastActivity = 'now';
+          else if (diffMins < 60) lastActivity = `${diffMins}m ago`;
+          else lastActivity = `${Math.floor(diffMins / 60)}h ago`;
+        }
+        operationsCount = data.operationsCount || data.commandCount || 0;
+        break;
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  // Fallback: check metrics for activity
+  if (!duration) {
+    const metricsPath = path.join(process.cwd(), '.claude-flow', 'metrics', 'activity.json');
+    if (fs.existsSync(metricsPath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(metricsPath, 'utf-8'));
+        operationsCount = data.totalOperations || 0;
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  return { duration, lastActivity, operationsCount };
+}
+
+// Get trend indicator based on change
+function getTrend(current, previous) {
+  if (previous === null || previous === undefined) return '';
+  if (current > previous) return `${c.brightGreen}↑${c.reset}`;
+  if (current < previous) return `${c.brightRed}↓${c.reset}`;
+  return `${c.dim}→${c.reset}`;
+}
+
+// Store previous values for trends (persisted between calls)
+let prevIntelligence = null;
+try {
+  const trendPath = path.join(process.cwd(), '.claude-flow', '.trend-cache.json');
+  if (fs.existsSync(trendPath)) {
+    const data = JSON.parse(fs.readFileSync(trendPath, 'utf-8'));
+    prevIntelligence = data.intelligence;
+  }
+} catch (e) { /* ignore */ }
+
 // Generate progress bar
 function progressBar(current, total) {
   const width = 5;
@@ -770,15 +893,46 @@ function generateStatusline() {
   const hooks = getHooksStatus();
   const agentdb = getAgentDBStats();
   const tests = getTestStats();
+  const git = getGitStatus();
+  const session = getSessionStats();
   const lines = [];
 
-  // Header Line
+  // Calculate intelligence trend
+  const intellTrend = getTrend(system.intelligencePct, prevIntelligence);
+
+  // Save current values for next trend calculation
+  try {
+    const trendPath = path.join(process.cwd(), '.claude-flow', '.trend-cache.json');
+    const trendDir = path.dirname(trendPath);
+    if (!fs.existsSync(trendDir)) fs.mkdirSync(trendDir, { recursive: true });
+    fs.writeFileSync(trendPath, JSON.stringify({ intelligence: system.intelligencePct, timestamp: Date.now() }));
+  } catch (e) { /* ignore */ }
+
+  // Header Line with git changes indicator
   let header = `${c.bold}${c.brightPurple}▊ Claude Flow V3 ${c.reset}`;
   header += `${swarm.coordinationActive ? c.brightCyan : c.dim}● ${c.brightCyan}${user.name}${c.reset}`;
   if (user.gitBranch) {
     header += `  ${c.dim}│${c.reset}  ${c.brightBlue}⎇ ${user.gitBranch}${c.reset}`;
+    // Add git changes indicator
+    const gitChanges = git.modified + git.staged + git.untracked;
+    if (gitChanges > 0) {
+      let gitIndicator = '';
+      if (git.staged > 0) gitIndicator += `${c.brightGreen}+${git.staged}${c.reset}`;
+      if (git.modified > 0) gitIndicator += `${c.brightYellow}~${git.modified}${c.reset}`;
+      if (git.untracked > 0) gitIndicator += `${c.dim}?${git.untracked}${c.reset}`;
+      header += ` ${gitIndicator}`;
+    }
+    // Add ahead/behind indicator
+    if (git.ahead > 0 || git.behind > 0) {
+      if (git.ahead > 0) header += ` ${c.brightGreen}↑${git.ahead}${c.reset}`;
+      if (git.behind > 0) header += ` ${c.brightRed}↓${git.behind}${c.reset}`;
+    }
   }
   header += `  ${c.dim}│${c.reset}  ${c.purple}${user.modelName}${c.reset}`;
+  // Add session duration if available
+  if (session.duration) {
+    header += `  ${c.dim}│${c.reset}  ${c.cyan}⏱ ${session.duration}${c.reset}`;
+  }
   lines.push(header);
 
   // Separator
@@ -805,7 +959,7 @@ function generateStatusline() {
     `${c.brightBlue}🪝 ${hooksColor}${hooks.enabled}${c.reset}/${c.brightWhite}${hooks.total}${c.reset}    ` +
     `${securityIcon} ${securityColor}CVE ${security.cvesFixed}${c.reset}/${c.brightWhite}${security.totalCves}${c.reset}    ` +
     `${c.brightCyan}💾 ${system.memoryMB}MB${c.reset}    ` +
-    `${c.dim}🧠 ${String(system.intelligencePct).padStart(3)}%${c.reset}`
+    `${system.intelligencePct >= 80 ? c.brightGreen : system.intelligencePct >= 40 ? c.brightYellow : c.dim}🧠 ${String(system.intelligencePct).padStart(3)}%${intellTrend}${c.reset}`
   );
 
   // Line 3: Architecture status with ADRs, AgentDB, Tests
