@@ -3792,7 +3792,29 @@ npx agentic-jujutsu examples        # Show usage examples
 [![GitHub](https://img.shields.io/badge/GitHub-ruvnet%2Fruvector-blue?logo=github)](https://github.com/ruvnet/ruvector)
 [![Docker](https://img.shields.io/badge/Docker-ruvector--postgres-blue?logo=docker)](https://hub.docker.com/r/ruvnet/ruvector-postgres)
 
-**RuVector** is a high-performance vector database and neural computing library written in Rust with Node.js/WASM bindings. It powers Claude-Flow's intelligence layer with native speed.
+**RuVector** is a high-performance distributed vector database combining vector search, graph queries, and self-learning neural networks. Written in Rust with Node.js/WASM bindings, it powers Claude-Flow's intelligence layer with native speed.
+
+### Key Capabilities
+
+| Capability | Description | Performance |
+|------------|-------------|-------------|
+| **Vector Search** | HNSW indexing with SIMD acceleration | **~61µs latency, 16,400 QPS** |
+| **Graph Queries** | Full Cypher syntax (MATCH, WHERE, CREATE) | Native graph traversal |
+| **Self-Learning** | GNN layers that improve search over time | Automatic optimization |
+| **Distributed** | Raft consensus, multi-master replication | Auto-sharding |
+| **Compression** | Adaptive tiered (hot/warm/cool/cold) | **2-32x memory reduction** |
+| **39 Attention Types** | Flash, linear, sparse, graph, hyperbolic | GPU-accelerated SQL |
+
+### Performance Benchmarks
+
+| Operation | Latency | Throughput |
+|-----------|---------|------------|
+| HNSW Search (k=10, 384-dim) | **61µs** | 16,400 QPS |
+| HNSW Search (k=100) | 164µs | 6,100 QPS |
+| Cosine Distance (1536-dim) | 143ns | 7M ops/sec |
+| Dot Product (384-dim) | 33ns | 30M ops/sec |
+| Batch Distance (1000 vectors) | 237µs | 4.2M/sec |
+| Memory (1M vectors with PQ8) | - | **200MB** |
 
 ### Quick Start
 
@@ -3807,16 +3829,44 @@ npx ruvector --help
 docker run -d -p 5432:5432 ruvnet/ruvector-postgres
 ```
 
+### Basic Usage
+
+```javascript
+import ruvector from 'ruvector';
+
+// Initialize vector database
+const db = new ruvector.VectorDB(384); // 384 dimensions
+
+// Insert vectors
+await db.insert('doc1', embedding1);
+await db.insert('doc2', embedding2);
+
+// Search (returns top-k similar)
+const results = await db.search(queryEmbedding, 10);
+
+// Graph queries with Cypher
+await db.execute("CREATE (a:Person {name: 'Alice'})-[:KNOWS]->(b:Person {name: 'Bob'})");
+const friends = await db.execute("MATCH (p:Person)-[:KNOWS]->(friend) RETURN friend.name");
+
+// GNN-enhanced search (self-learning)
+const layer = new ruvector.GNNLayer(384, 256, 4);
+const enhanced = layer.forward(query, neighbors, weights);
+
+// Compression (2-32x memory reduction)
+const compressed = ruvector.compress(embedding, 0.3); // 30% quality threshold
+```
+
 ### Package Ecosystem
 
 | Package | Description | Performance |
 |---------|-------------|-------------|
-| **[ruvector](https://www.npmjs.com/package/ruvector)** | Core vector database with HNSW | 150x-12,500x faster search |
+| **[ruvector](https://www.npmjs.com/package/ruvector)** | Core vector database with HNSW | **~61µs search, 16,400 QPS** |
 | **[@ruvector/attention](https://www.npmjs.com/package/@ruvector/attention)** | Flash Attention mechanisms | 2.49x-7.47x speedup |
 | **[@ruvector/sona](https://www.npmjs.com/package/@ruvector/sona)** | SONA adaptive learning (LoRA, EWC++) | <0.05ms adaptation |
-| **[@ruvector/gnn](https://www.npmjs.com/package/@ruvector/gnn)** | Graph Neural Networks | Native NAPI bindings |
+| **[@ruvector/gnn](https://www.npmjs.com/package/@ruvector/gnn)** | Graph Neural Networks (15 layer types) | Native NAPI bindings |
 | **[@ruvector/graph-node](https://www.npmjs.com/package/@ruvector/graph-node)** | Graph DB with Cypher queries | 10x faster than WASM |
 | **[@ruvector/rvlite](https://www.npmjs.com/package/@ruvector/rvlite)** | Standalone DB (SQL, SPARQL, Cypher) | All-in-one solution |
+| **[ruvector-wasm](https://www.npmjs.com/package/ruvector-wasm)** | Browser/Edge WASM build | Works everywhere |
 
 ### 🐘 RuVector PostgreSQL — Enterprise Vector Database
 
