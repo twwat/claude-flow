@@ -36,19 +36,45 @@ const activeTrajectories = new Map<string, TrajectoryTracker>();
 // Browser Service Class
 // ============================================================================
 
+export interface BrowserServiceConfig extends Partial<BrowserAgentConfig> {
+  enableMemory?: boolean;
+  enableSecurity?: boolean;
+  requireHttps?: boolean;
+  blockedDomains?: string[];
+  allowedDomains?: string[];
+}
+
 export class BrowserService {
   private adapter: AgentBrowserAdapter;
   private sessionId: string;
   private currentTrajectory?: string;
   private snapshots: Map<string, Snapshot> = new Map();
+  private memoryManager?: BrowserMemoryManager;
+  private securityScanner?: BrowserSecurityScanner;
+  private config: BrowserServiceConfig;
 
-  constructor(config: Partial<BrowserAgentConfig> = {}) {
+  constructor(config: BrowserServiceConfig = {}) {
+    this.config = config;
     this.sessionId = config.sessionId || `browser-${Date.now()}`;
     this.adapter = new AgentBrowserAdapter({
       session: this.sessionId,
       timeout: config.defaultTimeout || 30000,
       headless: config.headless !== false,
     });
+
+    // Initialize memory integration if enabled (default: true)
+    if (config.enableMemory !== false) {
+      this.memoryManager = createMemoryManager(this.sessionId);
+    }
+
+    // Initialize security scanning if enabled (default: true)
+    if (config.enableSecurity !== false) {
+      this.securityScanner = getSecurityScanner({
+        requireHttps: config.requireHttps,
+        blockedDomains: config.blockedDomains,
+        allowedDomains: config.allowedDomains,
+      });
+    }
   }
 
   // ===========================================================================
