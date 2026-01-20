@@ -137,7 +137,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     steps: [
       { id: 'navigate', action: 'open', target: '\${url}', waitAfter: 1000 },
       { id: 'click-oauth', action: 'click', target: '\${providerButton}', waitAfter: 2000 },
-      { id: 'enter-email', action: 'fill', target: '[type="email"], #identifierId', value: '${email}' },
+      { id: 'enter-email', action: 'fill', target: '[type="email"], #identifierId', value: '\${email}' },
       { id: 'next-email', action: 'click', target: '#identifierNext, [type="submit"]', waitAfter: 1500 },
       { id: 'enter-password', action: 'fill', target: '[type="password"], [name="password"]', value: '\${password}' },
       { id: 'submit', action: 'click', target: '#passwordNext, [type="submit"]', waitAfter: 3000 },
@@ -247,7 +247,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     steps: [
       { id: 'navigate', action: 'open', target: '\${url}', waitAfter: 1000 },
       { id: 'fill-name', action: 'fill', target: '#name, [name="name"], [placeholder*="name" i]', value: '${name}' },
-      { id: 'fill-email', action: 'fill', target: '#email, [name="email"], [type="email"]', value: '${email}' },
+      { id: 'fill-email', action: 'fill', target: '#email, [name="email"], [type="email"]', value: '\${email}' },
       { id: 'fill-message', action: 'fill', target: '#message, [name="message"], textarea', value: '${message}' },
       { id: 'submit', action: 'click', target: '\${submitSelector}', waitAfter: 2000 },
       { id: 'screenshot', action: 'screenshot', optional: true },
