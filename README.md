@@ -5724,7 +5724,7 @@ npx claude-flow@v3alpha init --wizard
 ---
 
 <details>
-<summary><h2>🔧 Troubleshooting </h2></summary>
+<summary>🔧 <strong>Troubleshooting</strong></summary>
 
 
 ### Common Issues
