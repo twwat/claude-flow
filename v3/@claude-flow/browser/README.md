@@ -380,7 +380,7 @@ await swarm.closeAll();
 ---
 
 <details>
-<summary><h2>📚 API Reference</h2></summary>
+<summary><strong>📚 API Reference</strong></summary>
 
 ### BrowserService
 
