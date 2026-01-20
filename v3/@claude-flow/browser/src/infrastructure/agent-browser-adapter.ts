@@ -327,7 +327,7 @@ export class AgentBrowserAdapter {
   // ===========================================================================
 
   async eval<T = unknown>(input: EvalInput): Promise<ActionResult<T>> {
-    return this.exec(['eval', input.script]);
+    return this.exec<T>(['eval', input.script]);
   }
 
   // ===========================================================================
