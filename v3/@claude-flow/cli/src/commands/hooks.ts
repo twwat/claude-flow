@@ -1620,7 +1620,7 @@ const postTaskCommand: Command = {
         };
       }>('hooks/post-task', {
         taskId,
-        success,
+        success: successValue,
         quality: ctx.flags.quality,
         agent: ctx.flags.agent,
         timestamp: Date.now(),
