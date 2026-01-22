@@ -46,7 +46,7 @@
     "@ruvector/sona": "^0.1.5",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.0.0",
-    "agentic-flow": "^2.0.1-alpha.80",
+    "agentic-flow": "^2.0.2-alpha",
     "eslint": "^8.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.0.0",
