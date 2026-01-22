@@ -199,10 +199,8 @@ const postEditCommand: Command = {
       return { success: false, exitCode: 1 };
     }
 
-    if (success === undefined) {
-      output.printError('Success flag is required. Use --success true/false.');
-      return { success: false, exitCode: 1 };
-    }
+    // Default to true if not specified (defensive for hook invocations)
+    const successValue = success !== undefined ? success : true;
 
     output.printInfo(`Recording outcome for: ${output.highlight(filePath)}`);
 
