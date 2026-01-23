@@ -1,0 +1,370 @@
+# Prime Radiant Plugin Manifest
+# Mathematical AI Interpretability for Claude Flow V3
+
+name: prime-radiant
+version: 0.1.3
+description: |
+  Advanced mathematical AI interpretability plugin providing sheaf cohomology,
+  spectral analysis, causal inference, and quantum topology for coherence
+  validation, consensus verification, and hallucination prevention.
+
+author: rUv
+license: MIT
+repository: https://github.com/ruvnet/claude-flow
+documentation: https://github.com/ruvnet/claude-flow/blob/main/v3/plugins/prime-radiant/README.md
+
+# Plugin metadata
+metadata:
+  category: interpretability
+  tags:
+    - sheaf-cohomology
+    - causal-inference
+    - quantum-topology
+    - ai-interpretability
+    - coherence-engine
+    - rag
+    - attention-mechanism
+  stability: alpha
+  wasmSize: 92KB
+  dependencies: zero
+
+# V3 domain integration
+domains:
+  - memory       # Pre-storage coherence gate
+  - security     # Input validation
+  - coordination # Swarm stability analysis
+  - hive-mind    # Consensus verification
+
+# Required Claude Flow dependencies
+dependencies:
+  required:
+    - "@claude-flow/memory": ">=3.0.0"
+    - "@claude-flow/security": ">=3.0.0"
+    - "@claude-flow/coordination": ">=3.0.0"
+  optional:
+    - "@claude-flow/embeddings": ">=3.0.0"  # For embedding generation
+    - "@claude-flow/aidefence": ">=3.0.0"   # For enhanced threat detection
+
+# Capabilities provided by this plugin
+capabilities:
+  - coherence-checking      # Sheaf Laplacian contradiction detection
+  - spectral-analysis       # Eigenvalue stability analysis
+  - causal-inference        # Do-calculus interventional queries
+  - consensus-verification  # Multi-agent agreement validation
+  - quantum-topology        # Betti numbers, persistence diagrams
+  - category-theory         # Functor and morphism operations
+  - hott-proofs            # Homotopy Type Theory verification
+
+# 6 Mathematical Engines
+engines:
+  cohomology:
+    name: CohomologyEngine
+    description: Sheaf Laplacian for coherence detection
+    performance: "<5ms per check"
+    key_features:
+      - Sheaf Laplacian energy computation
+      - Contradiction detection
+      - Coherence scoring (0=coherent, 1=contradictory)
+
+  spectral:
+    name: SpectralEngine
+    description: Stability and spectral analysis
+    performance: "<20ms for 100x100 matrix"
+    key_features:
+      - Eigenvalue computation
+      - Spectral gap analysis
+      - Stability index calculation
+
+  causal:
+    name: CausalEngine
+    description: Do-calculus causal inference
+    performance: "<10ms per query"
+    key_features:
+      - Causal effect estimation
+      - Confounder identification
+      - Backdoor path detection
+
+  quantum:
+    name: QuantumEngine
+    description: Quantum topology operations
+    performance: "<50ms per computation"
+    key_features:
+      - Betti number computation
+      - Persistence diagrams
+      - Homology class counting
+
+  category:
+    name: CategoryEngine
+    description: Category theory functors/morphisms
+    performance: "<5ms per operation"
+    key_features:
+      - Morphism validation
+      - Functor application
+      - Natural transformation detection
+
+  hott:
+    name: HottEngine
+    description: Homotopy Type Theory
+    performance: "<10ms per verification"
+    key_features:
+      - Proof verification
+      - Type inference
+      - Term normalization
+
+# MCP Tools
+tools:
+  - name: pr_coherence_check
+    description: Check coherence of vectors using Sheaf Laplacian energy
+    category: coherence
+    input:
+      vectors:
+        type: array[array[number]]
+        required: true
+        description: Array of embedding vectors to check
+      threshold:
+        type: number
+        default: 0.3
+        description: Energy threshold for coherence (0-1)
+    output:
+      coherent: boolean
+      energy: number
+      violations: array[string]
+      confidence: number
+
+  - name: pr_spectral_analyze
+    description: Analyze stability using spectral graph theory
+    category: spectral
+    input:
+      adjacencyMatrix:
+        type: array[array[number]]
+        required: true
+        description: Adjacency matrix representing connections
+      analyzeType:
+        type: enum[stability, clustering, connectivity]
+        default: stability
+    output:
+      stable: boolean
+      spectralGap: number
+      stabilityIndex: number
+      eigenvalues: array[number]
+
+  - name: pr_causal_infer
+    description: Perform causal inference using do-calculus
+    category: causal
+    input:
+      treatment:
+        type: string
+        required: true
+        description: Treatment/intervention variable
+      outcome:
+        type: string
+        required: true
+        description: Outcome variable
+      graph:
+        type: object
+        required: true
+        description: Causal graph with nodes and edges
+    output:
+      causalEffect: number
+      confounders: array[string]
+      interventionValid: boolean
+      backdoorPaths: array[array[string]]
+
+  - name: pr_consensus_verify
+    description: Verify multi-agent consensus mathematically
+    category: consensus
+    input:
+      agentStates:
+        type: array[object]
+        required: true
+        description: Array of agent states with embeddings and votes
+      consensusThreshold:
+        type: number
+        default: 0.8
+        description: Required agreement threshold (0-1)
+    output:
+      consensusAchieved: boolean
+      agreementRatio: number
+      coherenceEnergy: number
+      spectralStability: boolean
+
+  - name: pr_quantum_topology
+    description: Compute quantum topology features
+    category: topology
+    input:
+      points:
+        type: array[array[number]]
+        required: true
+        description: Point cloud for topological analysis
+      maxDimension:
+        type: number
+        default: 2
+        description: Maximum homology dimension to compute
+    output:
+      bettiNumbers: array[number]
+      persistenceDiagram: array[array[number]]
+      homologyClasses: number
+
+  - name: pr_memory_gate
+    description: Pre-storage coherence gate for memory entries
+    category: memory
+    input:
+      entry:
+        type: object
+        required: true
+        description: Memory entry with key, content, and embedding
+      contextEmbeddings:
+        type: array[array[number]]
+        description: Existing context embeddings to check against
+      thresholds:
+        type: object
+        description: Custom thresholds (reject, warn)
+    output:
+      action: enum[allow, warn, reject]
+      coherent: boolean
+      energy: number
+      violations: array[string]
+
+# Hooks
+hooks:
+  - name: pr/pre-memory-store
+    event: pre-memory-store
+    priority: high
+    description: Validates memory entry coherence before storage
+    behavior: |
+      - Gets existing context from same namespace
+      - Validates coherence using Sheaf Laplacian
+      - Rejects entries with energy > 0.7
+      - Warns for entries with energy 0.3-0.7
+      - Adds coherence metadata to stored entries
+
+  - name: pr/pre-consensus
+    event: pre-consensus
+    priority: high
+    description: Validates consensus proposal coherence before voting
+    behavior: |
+      - Checks proposal against existing decisions
+      - Rejects proposals with energy > 0.7
+      - Adds coherence metrics to accepted proposals
+
+  - name: pr/post-swarm-task
+    event: post-task
+    priority: normal
+    description: Analyzes swarm stability after task completion
+    conditions:
+      - payload.isSwarmTask === true
+    behavior: |
+      - Builds communication adjacency matrix
+      - Analyzes spectral stability
+      - Stores stability metrics in memory
+      - Adds stability metrics to task result
+
+  - name: pr/pre-rag-retrieval
+    event: pre-rag-retrieval
+    priority: high
+    description: Checks retrieved context coherence to prevent hallucinations
+    behavior: |
+      - Validates coherence of retrieved documents
+      - Filters contradictory documents if energy > 0.5
+      - Adds coherence filtering metadata
+
+# Memory namespaces used
+namespaces:
+  - name: pr/coherence-checks
+    description: Stores coherence check history
+    retention: 7d
+
+  - name: pr/stability-metrics
+    description: Stores stability analysis results
+    retention: 30d
+
+  - name: pr/causal-models
+    description: Stores causal relationship models
+    retention: persistent
+
+  - name: pr/thresholds
+    description: Stores configured thresholds
+    retention: persistent
+
+# Configuration options
+config:
+  coherence:
+    warnThreshold:
+      type: number
+      default: 0.3
+      description: Energy threshold for warnings
+    rejectThreshold:
+      type: number
+      default: 0.7
+      description: Energy threshold for rejection
+    cacheEnabled:
+      type: boolean
+      default: true
+      description: Enable result caching
+    cacheTTL:
+      type: number
+      default: 60000
+      description: Cache TTL in milliseconds
+
+  spectral:
+    stabilityThreshold:
+      type: number
+      default: 0.1
+      description: Spectral gap threshold for stability
+    maxMatrixSize:
+      type: number
+      default: 1000
+      description: Maximum adjacency matrix size
+
+  causal:
+    maxBackdoorPaths:
+      type: number
+      default: 10
+      description: Maximum backdoor paths to compute
+    confidenceThreshold:
+      type: number
+      default: 0.8
+      description: Minimum confidence for effect estimation
+
+# Performance targets
+performance:
+  wasmLoadTime: "<50ms"
+  coherenceCheck: "<5ms"
+  spectralAnalysis: "<20ms"
+  causalInference: "<10ms"
+  memoryOverhead: "<10MB"
+  mcpToolResponse: "<100ms"
+
+# Use cases
+useCases:
+  - name: Memory Coherence Gate
+    description: Check vectors for contradiction before storage
+    domains: [memory]
+    tools: [pr_memory_gate, pr_coherence_check]
+    hooks: [pr/pre-memory-store]
+
+  - name: Consensus Verification
+    description: Mathematically validate multi-agent agreement
+    domains: [hive-mind, coordination]
+    tools: [pr_consensus_verify, pr_spectral_analyze]
+    hooks: [pr/pre-consensus]
+
+  - name: Hallucination Detection
+    description: Catch RAG inconsistencies before use
+    domains: [memory, security]
+    tools: [pr_coherence_check]
+    hooks: [pr/pre-rag-retrieval]
+
+  - name: Swarm Stability Monitoring
+    description: Spectral analysis of swarm coordination health
+    domains: [coordination, hive-mind]
+    tools: [pr_spectral_analyze]
+    hooks: [pr/post-swarm-task]
+
+# Related ADRs
+references:
+  - ADR-031: Prime Radiant Integration
+  - ADR-006: Unified Memory Service
+  - ADR-013: Core Security Module
+  - ADR-015: Unified Plugin System
+  - ADR-022: AIDefence Integration
