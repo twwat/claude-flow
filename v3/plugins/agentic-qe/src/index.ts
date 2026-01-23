@@ -143,63 +143,59 @@ export type {
 // =============================================================================
 
 export type {
-  // Plugin Interfaces
-  IPlugin,
-  PluginHealthStatus,
-  ComponentHealth,
-  IPluginRegistry,
-  IPluginContext,
-  IMCPTool,
-  MCPToolResult,
-
   // Bridge Interfaces
   IQEMemoryBridge,
   LearningTrajectory,
-  TrajectoryStep,
-  NamespaceStats,
+  LearningStep,
+  TestPattern,
+  PatternFilters,
+  CoverageGap,
+  QEMemoryStats,
 
   IQESecurityBridge,
-  PathValidationResult,
-  CommandExecutionResult,
-  SanitizedError,
-  ValidationResult,
+  ValidatedPath,
+  DASTProbe,
+  DASTResult,
+  AuditEvent,
+  SignedAuditEntry,
+  PIIType,
+  PIIDetection,
+  SecurityPolicy,
 
   IQECoreBridge,
-  QETaskDefinition,
+  TestSuite,
+  TestCase,
+  TestSuiteConfig,
+  ExecutorConfig,
+  AgentHandle,
+  TaskHandle,
+  TaskResult,
+  TaskProgress,
+  QualityGate,
+  QualityGateCriteria,
+  QualityMetrics,
+  WorkflowResult,
+  StepResult,
+  Priority,
 
   IQEHiveBridge,
+  HiveRole,
   QESwarmTask,
   QESwarmResult,
-  QEBroadcastMessage,
-  ConsensusProposal,
+  AgentTaskResult,
   ConsensusResult,
 
   IQEModelRoutingAdapter,
-  QERoutingTask,
+  QETask,
+  ModelTier,
+  ModelSelection,
   QERouteResult,
 
-  // Mapper and Sandbox Interfaces
-  IContextMapper,
-  ISecuritySandbox,
-  SandboxExecutionOptions,
-  ResourceUsage,
-
-  // V3 Service Interfaces
-  IMemoryService,
-  ISecurityModule,
-  IEmbeddingsService,
-  IModelRouter,
-  IHiveMindService,
-  IUIService,
-
-  // QE Service Interfaces
-  ITestGenerationService,
-  ICoverageAnalysisService,
-  IQualityAssessmentService,
-  IDefectIntelligenceService,
-  ISecurityComplianceService,
-  IContractTestingService,
-  IChaosResilienceService,
+  // Plugin Context
+  QEPluginContext,
+  QELogger,
+  QEPluginConfig,
+  TestPatternType,
 } from './interfaces.js';
 
 // =============================================================================
