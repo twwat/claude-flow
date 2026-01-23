@@ -319,7 +319,8 @@ async function handler(
     }
 
     const maxBackdoorPaths = context?.config?.causal?.maxBackdoorPaths ?? 10;
-    const confidenceThreshold = context?.config?.causal?.confidenceThreshold ?? 0.8;
+    // Note: confidenceThreshold can be used for filtering in future enhancements
+    void (context?.config?.causal?.confidenceThreshold ?? 0.8);
 
     let effect: number;
     let confidence: number;
