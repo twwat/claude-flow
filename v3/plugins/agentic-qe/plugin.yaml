@@ -1,0 +1,497 @@
+# agentic-qe Plugin Manifest
+# Quality Engineering plugin for Claude Flow V3
+
+name: agentic-qe
+version: 3.2.3
+description: |
+  Comprehensive Quality Engineering plugin with 51 specialized agents
+  across 12 DDD bounded contexts. Features AI-powered test generation,
+  O(log n) coverage analysis, defect prediction, security compliance,
+  contract testing, visual/accessibility testing, and chaos engineering.
+
+author: rUv
+license: MIT
+homepage: https://github.com/ruvnet/agentic-qe
+repository: https://github.com/ruvnet/agentic-qe
+
+# Plugin metadata
+metadata:
+  category: quality-engineering
+  tags:
+    - testing
+    - quality
+    - coverage
+    - security
+    - tdd
+    - bdd
+    - chaos-engineering
+    - accessibility
+  stability: stable
+  minClaudeFlowVersion: "3.0.0-alpha.50"
+
+# Dependencies
+dependencies:
+  required:
+    - "@claude-flow/plugins": ">=3.0.0"
+    - "@claude-flow/memory": ">=3.0.0"
+    - "@claude-flow/security": ">=3.0.0"
+    - "@claude-flow/embeddings": ">=3.0.0"
+  optional:
+    - "@claude-flow/browser": ">=3.0.0"  # For E2E/visual testing
+    - "@ruvector/attention": ">=1.0.0"   # Enhanced pattern matching
+    - "@ruvector/gnn": ">=1.0.0"         # Code graph analysis
+    - "@ruvector/sona": ">=1.0.0"        # Self-optimizing learning
+
+# Bounded contexts and their agents
+contexts:
+  test-generation:
+    description: AI-powered test creation across paradigms
+    agents:
+      - unit-test-generator
+      - integration-test-generator
+      - e2e-test-generator
+      - property-test-generator
+      - mutation-test-generator
+      - fuzz-test-generator
+      - api-test-generator
+      - performance-test-generator
+      - security-test-generator
+      - accessibility-test-generator
+      - contract-test-generator
+      - bdd-test-generator
+    memoryNamespace: aqe/v3/test-patterns
+    securityLevel: medium
+
+  test-execution:
+    description: Parallel test execution with retry and reporting
+    agents:
+      - test-runner
+      - parallel-executor
+      - retry-manager
+      - result-aggregator
+      - flaky-test-detector
+      - timeout-manager
+      - resource-allocator
+      - test-reporter
+    memoryNamespace: aqe/v3/test-execution
+    securityLevel: high  # Executes code
+
+  coverage-analysis:
+    description: O(log n) gap detection using Johnson-Lindenstrauss
+    agents:
+      - coverage-collector
+      - gap-detector
+      - priority-ranker
+      - hotspot-analyzer
+      - trend-tracker
+      - impact-assessor
+    memoryNamespace: aqe/v3/coverage-data
+    securityLevel: low
+
+  quality-assessment:
+    description: Quality gates and release readiness decisions
+    agents:
+      - quality-gate-evaluator
+      - readiness-assessor
+      - risk-calculator
+      - metric-aggregator
+      - decision-maker
+    memoryNamespace: aqe/v3/quality
+    securityLevel: low
+
+  defect-intelligence:
+    description: ML-based defect prediction and root cause analysis
+    agents:
+      - defect-predictor
+      - root-cause-analyzer
+      - pattern-detector
+      - regression-tracker
+    memoryNamespace: aqe/v3/defect-patterns
+    securityLevel: low
+
+  requirements-validation:
+    description: BDD validation and testability analysis
+    agents:
+      - bdd-validator
+      - testability-analyzer
+      - requirement-tracer
+    memoryNamespace: aqe/v3/requirements
+    securityLevel: low
+
+  code-intelligence:
+    description: Knowledge graph and semantic code search
+    agents:
+      - knowledge-graph-builder
+      - semantic-searcher
+      - dependency-analyzer
+      - complexity-assessor
+      - pattern-miner
+    memoryNamespace: aqe/v3/code-knowledge
+    securityLevel: medium
+
+  security-compliance:
+    description: SAST, DAST, and compliance auditing
+    agents:
+      - sast-scanner
+      - dast-scanner
+      - audit-trail-manager
+      - compliance-checker
+    memoryNamespace: aqe/v3/security-findings
+    securityLevel: critical
+
+  contract-testing:
+    description: API contract validation (OpenAPI, GraphQL, gRPC)
+    agents:
+      - openapi-validator
+      - graphql-validator
+      - grpc-validator
+    memoryNamespace: aqe/v3/contracts
+    securityLevel: medium
+
+  visual-accessibility:
+    description: Visual regression and WCAG compliance testing
+    agents:
+      - visual-regression-detector
+      - wcag-checker
+      - screenshot-differ
+    memoryNamespace: aqe/v3/visual-baselines
+    securityLevel: medium
+
+  chaos-resilience:
+    description: Chaos engineering and resilience validation
+    agents:
+      - chaos-injector
+      - load-generator
+      - resilience-assessor
+      - recovery-validator
+    memoryNamespace: aqe/v3/chaos-experiments
+    securityLevel: critical  # Can disrupt systems
+
+  learning-optimization:
+    description: Cross-domain transfer learning and optimization
+    agents:
+      - cross-domain-learner
+      - pattern-optimizer
+    memoryNamespace: aqe/v3/learning-trajectories
+    securityLevel: low
+
+# TDD subagents (London-style red-green-refactor)
+tdd:
+  style: london
+  subagents:
+    - requirement-analyzer
+    - test-designer
+    - red-phase-executor
+    - green-phase-implementer
+    - refactor-advisor
+    - coverage-verifier
+    - cycle-coordinator
+  maxCycles: 10
+  defaultFramework: vitest
+
+# MCP tool registration
+mcpTools:
+  # Test Generation
+  - name: generate-tests
+    category: test-generation
+    description: Generate tests for code using AI-powered test generation
+
+  - name: tdd-cycle
+    category: test-generation
+    description: Execute TDD red-green-refactor cycle with 7 specialized subagents
+
+  # Coverage Analysis
+  - name: analyze-coverage
+    category: coverage-analysis
+    description: Analyze code coverage with O(log n) gap detection
+
+  - name: prioritize-gaps
+    category: coverage-analysis
+    description: Prioritize coverage gaps by risk score
+
+  # Quality Assessment
+  - name: evaluate-quality-gate
+    category: quality-assessment
+    description: Evaluate quality gates for release readiness
+
+  - name: assess-readiness
+    category: quality-assessment
+    description: Determine release readiness with confidence score
+
+  # Defect Intelligence
+  - name: predict-defects
+    category: defect-intelligence
+    description: Predict potential defects using ML-based analysis
+
+  - name: analyze-root-cause
+    category: defect-intelligence
+    description: Analyze root cause of defect with pattern matching
+
+  # Security Compliance
+  - name: security-scan
+    category: security-compliance
+    description: Run SAST/DAST security scans with compliance checking
+
+  - name: audit-compliance
+    category: security-compliance
+    description: Generate compliance audit report
+
+  # Contract Testing
+  - name: validate-contract
+    category: contract-testing
+    description: Validate API contracts (OpenAPI, GraphQL, gRPC)
+
+  - name: compare-contracts
+    category: contract-testing
+    description: Compare contract versions for breaking changes
+
+  # Visual/Accessibility
+  - name: visual-regression
+    category: visual-accessibility
+    description: Detect visual regressions with screenshot comparison
+
+  - name: check-accessibility
+    category: visual-accessibility
+    description: Check WCAG accessibility compliance
+
+  # Chaos Engineering
+  - name: chaos-inject
+    category: chaos-resilience
+    description: Inject chaos failures for resilience testing
+
+  - name: assess-resilience
+    category: chaos-resilience
+    description: Assess system resilience from experiment results
+
+# Hook definitions
+hooks:
+  # Pre-execution hooks
+  pre-test-execution:
+    description: Validate test environment before execution
+    priority: high
+
+  pre-security-scan:
+    description: Validate scan targets and permissions
+    priority: critical
+
+  # Post-execution hooks
+  post-test-execution:
+    description: Store test results and learn patterns
+    priority: normal
+
+  post-coverage-analysis:
+    description: Store coverage data and update trends
+    priority: normal
+
+  post-security-scan:
+    description: Store findings and update compliance status
+    priority: high
+
+# Worker definitions
+workers:
+  test-executor:
+    type: test-executor
+    capabilities:
+      - test-execution
+      - parallel-processing
+    maxConcurrent: 10
+
+  coverage-analyzer:
+    type: coverage-analyzer
+    capabilities:
+      - coverage-collection
+      - gap-detection
+    maxConcurrent: 5
+
+  security-scanner:
+    type: security-scanner
+    capabilities:
+      - sast
+      - dast
+    maxConcurrent: 3
+
+# Memory namespaces
+memory:
+  namespaces:
+    - name: aqe/v3/test-patterns
+      vectorDimension: 384
+      hnswConfig:
+        m: 16
+        efConstruction: 200
+        efSearch: 100
+      ttl: null  # Permanent
+
+    - name: aqe/v3/coverage-data
+      vectorDimension: 384
+      hnswConfig:
+        m: 12
+        efConstruction: 150
+        efSearch: 50
+      ttl: 86400000  # 24h
+
+    - name: aqe/v3/defect-patterns
+      vectorDimension: 384
+      hnswConfig:
+        m: 16
+        efConstruction: 200
+        efSearch: 100
+      ttl: null  # Permanent
+
+    - name: aqe/v3/code-knowledge
+      vectorDimension: 384
+      hnswConfig:
+        m: 24
+        efConstruction: 300
+        efSearch: 150
+      ttl: null  # Permanent
+
+    - name: aqe/v3/security-findings
+      vectorDimension: 384
+      hnswConfig:
+        m: 16
+        efConstruction: 200
+        efSearch: 100
+      ttl: null  # Permanent
+
+    - name: aqe/v3/contracts
+      vectorDimension: 384
+      hnswConfig:
+        m: 12
+        efConstruction: 150
+        efSearch: 50
+      ttl: null  # Permanent
+
+    - name: aqe/v3/visual-baselines
+      vectorDimension: 768  # Higher for images
+      hnswConfig:
+        m: 32
+        efConstruction: 400
+        efSearch: 200
+      ttl: null  # Permanent
+
+    - name: aqe/v3/chaos-experiments
+      vectorDimension: 384
+      hnswConfig:
+        m: 12
+        efConstruction: 150
+        efSearch: 50
+      ttl: 604800000  # 7 days
+
+    - name: aqe/v3/learning-trajectories
+      vectorDimension: 384
+      hnswConfig:
+        m: 16
+        efConstruction: 200
+        efSearch: 100
+      ttl: null  # Permanent
+
+# Security sandbox configuration
+sandbox:
+  maxExecutionTime: 30000  # 30s
+  memoryLimit: 536870912   # 512MB
+  networkPolicy: restricted
+  fileSystemPolicy: workspace-only
+  allowedCommands:
+    - node
+    - npm
+    - npx
+    - vitest
+    - jest
+    - pytest
+  blockedPaths:
+    - /etc
+    - /var
+    - ~/.ssh
+    - ~/.aws
+
+# Model routing (TinyDancer alignment with ADR-026)
+modelRouting:
+  tiers:
+    tier1:
+      handler: agent-booster
+      categories:
+        - add-test-import
+        - add-test-describe
+        - add-assertion
+        - remove-console
+      latency: "<1ms"
+      cost: 0
+
+    tier2:
+      handler: haiku
+      categories:
+        - generate-unit-test
+        - generate-mock
+        - analyze-coverage-line
+        - validate-simple-contract
+      latency: "~500ms"
+      cost: 0.0002
+
+    tier2-sonnet:
+      handler: sonnet
+      categories:
+        - generate-integration-test
+        - analyze-coverage-branch
+        - predict-defect-simple
+        - validate-contract
+      latency: "~2s"
+      cost: 0.003
+
+    tier3:
+      handler: opus
+      categories:
+        - generate-e2e-test
+        - root-cause-analysis
+        - chaos-experiment-design
+        - security-audit-deep
+        - architecture-analysis
+      latency: "~5s"
+      cost: 0.015
+
+# Performance targets
+performance:
+  testGenerationLatency: "<2s"
+  coverageAnalysis: "O(log n)"
+  qualityGateEvaluation: "<500ms"
+  securityScanPerKLOC: "<10s"
+  mcpToolResponse: "<100ms"
+  memoryPerContext: "<50MB"
+
+# V3 domain integration mapping
+integration:
+  memory:
+    type: shared-kernel
+    components:
+      - AgentDB
+      - HNSW
+      - Embeddings
+      - ReasoningBank
+
+  security:
+    type: conformist
+    components:
+      - PathValidator
+      - SafeExecutor
+      - TokenGenerator
+      - InputValidator
+
+  core:
+    type: customer-supplier
+    components:
+      - AgentService
+      - TaskService
+      - WorkflowService
+
+  coordination:
+    type: shared-kernel
+    components:
+      - HiveMind
+      - Consensus
+      - Broadcast
+      - SharedMemory
+
+  mcp:
+    type: published-language
+    components:
+      - ToolRegistry
+      - ToolHandler
