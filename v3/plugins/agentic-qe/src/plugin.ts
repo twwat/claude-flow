@@ -96,7 +96,8 @@ interface IMCPTool {
   inputSchema: Record<string, unknown>;
   category?: string;
   version?: string;
-  execute(input: unknown, context: IPluginContext): Promise<MCPToolResult>;
+  handler?: (input: unknown, context: IPluginContext) => Promise<MCPToolResult>;
+  execute?: (input: unknown, context: IPluginContext) => Promise<MCPToolResult>;
 }
 
 /**
