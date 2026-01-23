@@ -480,12 +480,15 @@ export class QuantumEngine implements IQuantumEngine {
     const distances: number[] = [];
     for (let i = 0; i < points.length; i++) {
       for (let j = i + 1; j < points.length; j++) {
-        distances.push(this.euclideanDistance(points[i], points[j]));
+        const pi = points[i];
+        const pj = points[j];
+        if (!pi || !pj) continue;
+        distances.push(this.euclideanDistance(pi, pj));
       }
     }
 
     distances.sort((a, b) => a - b);
-    return distances[Math.floor(distances.length / 2)];
+    return distances[Math.floor(distances.length / 2)] ?? 0;
   }
 
   /**
