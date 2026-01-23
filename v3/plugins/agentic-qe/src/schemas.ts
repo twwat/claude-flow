@@ -149,9 +149,7 @@ export const TestGenerationRequestSchema = z.object({
   testType: TestTypeSchema.default('unit'),
   framework: TestFrameworkSchema.optional(),
   coverage: CoverageConfigSchema.optional(),
-  style: TDDStyleSchema.default('tdd-london' as const).transform(
-    (v) => (v === 'tdd-london' ? 'london' : v) as 'london' | 'chicago'
-  ).or(TDDStyleSchema),
+  style: TDDStyleSchema.default('london'),
   context: z.string().optional(),
   language: z.string().optional(),
   maxTests: z.number().int().positive().optional(),
