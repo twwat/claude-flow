@@ -18,7 +18,7 @@ import type {
   IQuantumEngine,
   ICategoryEngine,
   IHottEngine
-} from './types';
+} from './types.js';
 
 import {
   CohomologyEngine,
@@ -27,7 +27,7 @@ import {
   QuantumEngine,
   CategoryEngine,
   HottEngine
-} from './engines';
+} from './engines/index.js';
 
 /**
  * Default WASM file path
