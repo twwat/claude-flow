@@ -257,19 +257,18 @@ export class WasmBridge {
       const wasmBuffer = await response.arrayBuffer();
       this.bundleSize = wasmBuffer.byteLength;
 
+      const importObject = this.createImportObject();
       if (typeof WebAssembly.instantiateStreaming === 'function') {
         // Streaming compilation (faster)
         const result = await WebAssembly.instantiateStreaming(
           fetch(wasmPath),
-          { env: this.createImportObject() }
+          importObject
         );
         this.wasmModule = result.instance.exports as unknown as WasmModule;
       } else {
         // Standard compilation
         const wasmModule = await WebAssembly.compile(wasmBuffer);
-        const instance = await WebAssembly.instantiate(wasmModule, {
-          env: this.createImportObject()
-        });
+        const instance = await WebAssembly.instantiate(wasmModule, importObject as WebAssembly.Imports);
         this.wasmModule = instance.exports as unknown as WasmModule;
       }
 
