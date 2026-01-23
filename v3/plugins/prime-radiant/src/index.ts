@@ -113,7 +113,7 @@ export type {
   HottResult,
 } from './types';
 
-export { DEFAULT_CONFIG, PrimeRadiantErrorCodes } from './types';
+export { DEFAULT_CONFIG, PrimeRadiantErrorCodes } from './types.js';
 
 // ============================================================================
 // Interface Exports
