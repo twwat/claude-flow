@@ -2,6 +2,38 @@
 
 Quality Engineering plugin providing 51 specialized agents across 12 DDD bounded contexts for comprehensive automated testing, quality assessment, and continuous validation.
 
+---
+
+## ⚠️ Implementation Status
+
+| Component | Status | Files |
+|-----------|--------|-------|
+| **ADR & Architecture** | ✅ Complete | `ADR-030-agentic-qe-integration.md` |
+| **DDD Documentation** | ✅ Complete | `domain-model.md`, `integration-points.md` |
+| **Plugin Manifest** | ✅ Complete | `plugin.yaml` |
+| **Usage Documentation** | ✅ Complete | `README.md` |
+| **TypeScript Implementation** | ❌ Not Started | 0/44 files |
+| **Agent Definitions** | ❌ Not Started | 0/58 YAML files |
+| **Skills** | ❌ Not Started | 0/12 skill files |
+| **Tests** | ❌ Not Started | 0/23 test files |
+
+### Implementation Phases
+
+| Phase | Name | Duration | Status | Files | LOC |
+|-------|------|----------|--------|-------|-----|
+| 1 | Plugin Scaffold | 1 week | ⏳ Pending | 8 | ~1,210 |
+| 2 | Bridge Implementations | 1 week | ⏳ Pending | 7 | ~1,500 |
+| 3 | MCP Tools | 1 week | ⏳ Pending | 17 | ~2,530 |
+| 4 | Hooks & Workers | 1 week | ⏳ Pending | 12 | ~1,470 |
+| 5 | Agent Definitions | 1 week | ⏳ Pending | 58 | ~2,320 |
+| 6 | Skills & Examples | 1 week | ⏳ Pending | 18 | ~1,610 |
+| 7 | Testing & Documentation | 1 week | ⏳ Pending | 24 | ~2,790 |
+| | **Total** | **7 weeks** | | **144** | **~13,430** |
+
+See [ADR-030](../../implementation/adrs/ADR-030-agentic-qe-integration.md) for full implementation plan.
+
+---
+
 ## Installation
 
 ```bash
