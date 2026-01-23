@@ -51,8 +51,10 @@ export class SpectralEngine implements ISpectralEngine {
     // Flatten matrix for WASM
     const flat = new Float32Array(n * n);
     for (let i = 0; i < n; i++) {
+      const row = matrix[i];
+      if (!row) continue;
       for (let j = 0; j < n; j++) {
-        flat[i * n + j] = matrix[i][j];
+        flat[i * n + j] = row[j] ?? 0;
       }
     }
 
