@@ -1045,16 +1045,19 @@ export class AQEPlugin implements IPlugin {
   private getWorkers(): QEWorkerDefinition[] {
     return [
       {
+        name: 'test-executor',
         type: 'test-executor',
         capabilities: ['test-execution', 'parallel-processing'],
         maxConcurrent: 10,
       },
       {
+        name: 'coverage-analyzer',
         type: 'coverage-analyzer',
         capabilities: ['coverage-collection', 'gap-detection'],
         maxConcurrent: 5,
       },
       {
+        name: 'security-scanner',
         type: 'security-scanner',
         capabilities: ['sast', 'dast'],
         maxConcurrent: 3,
