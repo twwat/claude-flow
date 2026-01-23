@@ -304,11 +304,11 @@ QE's Queen Coordinator integrates with Hive Mind:
 ### Full Test Suite Generation
 
 ```typescript
-import { getDefaultRegistry } from '@claude-flow/plugins';
-import { agenticQEPlugin } from 'agentic-qe/claude-flow-plugin';
+import { PLUGIN_METADATA, TOTAL_AGENT_COUNT, CONTEXT_AGENT_COUNTS } from '@claude-flow/plugin-agentic-qe';
 
-// Register plugin
-await getDefaultRegistry().register(agenticQEPlugin);
+console.log(PLUGIN_METADATA.name);       // "agentic-qe"
+console.log(TOTAL_AGENT_COUNT);          // 58
+console.log(Object.keys(CONTEXT_AGENT_COUNTS).length); // 13 contexts
 
 // Generate comprehensive test suite
 const result = await mcp.call('aqe/generate-tests', {
