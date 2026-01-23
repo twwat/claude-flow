@@ -363,16 +363,18 @@ describe('CohomologyEngine', () => {
     });
 
     it('should respect threshold parameter', () => {
+      // Use vectors with predictable energy (~0.3 dissimilarity)
       const vectorSet: VectorSet = {
         vectors: [
           [1, 0, 0],
-          [0.7, 0.3, 0],
+          [0.5, 0.5, 0], // More separated for clear threshold testing
         ],
       };
 
       const strictResult = engine.checkCoherence(vectorSet, 0.1);
       const lenientResult = engine.checkCoherence(vectorSet, 0.5);
 
+      // With more separated vectors, strict should fail and lenient should pass
       expect(strictResult.coherent).toBe(false);
       expect(lenientResult.coherent).toBe(true);
     });
