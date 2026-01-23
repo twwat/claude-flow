@@ -494,7 +494,7 @@ export class HottEngine implements IHottEngine {
   }
 
   // WASM memory allocation helpers (stubs for pure JS fallback)
-  private allocString(s: string): number {
+  private allocString(_s: string): number {
     return 0;
   }
 
