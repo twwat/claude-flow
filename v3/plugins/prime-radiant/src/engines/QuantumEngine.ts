@@ -267,20 +267,25 @@ export class QuantumEngine implements IQuantumEngine {
     const birthTime = new Array(n).fill(0);
 
     const find = (x: number): number => {
-      if (parent[x] !== x) {
-        parent[x] = find(parent[x]);
+      const px = parent[x];
+      if (px !== undefined && px !== x) {
+        parent[x] = find(px);
       }
-      return parent[x];
+      return parent[x] ?? x;
     };
 
     for (const { simplex, value } of sortedSimplices) {
       if (simplex.length === 1) {
         // Vertex - birth of component
         const v = simplex[0];
-        birthTime[v] = value;
+        if (v !== undefined) {
+          birthTime[v] = value;
+        }
       } else if (simplex.length === 2) {
         // Edge - potential merge
-        const [v1, v2] = simplex;
+        const v1 = simplex[0];
+        const v2 = simplex[1];
+        if (v1 === undefined || v2 === undefined) continue;
         const p1 = find(v1);
         const p2 = find(v2);
 
