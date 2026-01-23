@@ -708,6 +708,7 @@ export class PluginDiscoveryService {
       '@claude-flow/plugin-prime-radiant',
       '@claude-flow/claims',
       '@claude-flow/security',
+      '@claude-flow/plugins',
     ];
 
     // Fetch stats in parallel
