@@ -55,8 +55,8 @@ const listCommand: Command = {
       // TODO: Read from local installed plugins manifest
       output.printTable({
         columns: [
-          { key: 'name', header: 'Plugin', width: 24 },
-          { key: 'version', header: 'Version', width: 10 },
+          { key: 'name', header: 'Plugin', width: 38 },
+          { key: 'version', header: 'Version', width: 14 },
           { key: 'type', header: 'Type', width: 12 },
           { key: 'status', header: 'Status', width: 10 },
         ],
