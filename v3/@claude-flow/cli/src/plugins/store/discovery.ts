@@ -706,6 +706,8 @@ export class PluginDiscoveryService {
     const realNpmPackages = [
       '@claude-flow/plugin-agentic-qe',
       '@claude-flow/plugin-prime-radiant',
+      '@claude-flow/claims',
+      '@claude-flow/security',
     ];
 
     // Fetch stats in parallel
