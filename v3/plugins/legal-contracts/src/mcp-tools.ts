@@ -1144,7 +1144,7 @@ function calculateTextSimilarity(text1: string, text2: string): number {
 /**
  * Generate recommendation based on match status
  */
-function generateRecommendation(status: PlaybookMatch['status'], clauseType: ClauseType): string {
+function generateRecommendation(status: PlaybookMatch['status'], _clauseType: ClauseType): string {
   const recommendations: Record<PlaybookMatch['status'], string> = {
     matches_preferred: 'Clause matches preferred playbook position. No action required.',
     matches_acceptable: 'Clause is within acceptable variation. Consider negotiating closer to preferred position.',
