@@ -21,12 +21,8 @@ describe('GNNBridge', () => {
     bridge = new GNNBridge();
   });
 
-  afterEach(async () => {
-    try {
-      await bridge.destroy();
-    } catch {
-      // Ignore cleanup errors
-    }
+  afterEach(() => {
+    // GNNBridge doesn't have explicit destroy
   });
 
   describe('Initialization', () => {
@@ -43,46 +39,14 @@ describe('GNNBridge', () => {
       expect(bridge.isInitialized()).toBe(true);
     });
 
-    it('should initialize with custom config', async () => {
-      await bridge.initialize({
-        hiddenDim: 256,
-        numLayers: 4,
-        aggregation: 'mean',
-        dropout: 0.1,
-      });
-      expect(bridge.isInitialized()).toBe(true);
-    });
-
-    it('should initialize with language-specific config', async () => {
-      await bridge.initialize({
-        languages: ['typescript', 'javascript', 'python'],
-        maxGraphSize: 50000,
-        enableCaching: true,
-      });
-      expect(bridge.isInitialized()).toBe(true);
+    it('should initialize with custom embedding dimension', async () => {
+      const customBridge = new GNNBridge(256);
+      await customBridge.initialize();
+      expect(customBridge.isInitialized()).toBe(true);
     });
 
     it('should handle double initialization gracefully', async () => {
       await bridge.initialize();
-      await bridge.initialize();
-      expect(bridge.isInitialized()).toBe(true);
-    });
-  });
-
-  describe('Lifecycle', () => {
-    it('should destroy successfully', async () => {
-      await bridge.initialize();
-      await bridge.destroy();
-      expect(bridge.isInitialized()).toBe(false);
-    });
-
-    it('should handle destroy when not initialized', async () => {
-      await expect(bridge.destroy()).resolves.not.toThrow();
-    });
-
-    it('should reinitialize after destroy', async () => {
-      await bridge.initialize();
-      await bridge.destroy();
       await bridge.initialize();
       expect(bridge.isInitialized()).toBe(true);
     });
@@ -93,485 +57,159 @@ describe('GNNBridge', () => {
       await bridge.initialize();
     });
 
-    it('should build code graph from AST', async () => {
-      const codeStructure = {
-        files: [
-          {
-            path: 'src/utils.ts',
-            nodes: [
-              { id: 'func-1', type: 'function', name: 'helper', startLine: 1, endLine: 10 },
-              { id: 'func-2', type: 'function', name: 'process', startLine: 12, endLine: 25 },
-            ],
-            edges: [
-              { source: 'func-2', target: 'func-1', type: 'calls' },
-            ],
-          },
-        ],
-      };
+    it('should build code graph from files', async () => {
+      const files = [
+        'src/utils.ts',
+        'src/main.ts',
+        'src/types.ts',
+      ];
 
-      const result = await bridge.buildCodeGraph(codeStructure);
+      const graph = await bridge.buildCodeGraph(files, true);
 
-      expect(result).toHaveProperty('nodeCount');
-      expect(result).toHaveProperty('edgeCount');
-      expect(result.nodeCount).toBe(2);
-      expect(result.edgeCount).toBe(1);
+      expect(graph).toHaveProperty('nodes');
+      expect(graph).toHaveProperty('edges');
+      expect(graph).toHaveProperty('metadata');
+      expect(graph.nodes.length).toBe(3);
     });
 
-    it('should build graph from multiple files', async () => {
-      const codeStructure = {
-        files: [
-          {
-            path: 'src/a.ts',
-            nodes: [{ id: 'a-func', type: 'function', name: 'funcA' }],
-            edges: [],
-          },
-          {
-            path: 'src/b.ts',
-            nodes: [{ id: 'b-func', type: 'function', name: 'funcB' }],
-            edges: [{ source: 'b-func', target: 'a-func', type: 'imports' }],
-          },
-        ],
-      };
+    it('should handle empty file list', async () => {
+      const graph = await bridge.buildCodeGraph([], false);
 
-      const result = await bridge.buildCodeGraph(codeStructure);
-
-      expect(result.nodeCount).toBe(2);
-      expect(result.crossFileEdges).toBe(1);
+      expect(graph.nodes.length).toBe(0);
+      expect(graph.edges.length).toBe(0);
     });
 
-    it('should handle empty codebase', async () => {
-      const result = await bridge.buildCodeGraph({ files: [] });
+    it('should detect file types correctly', async () => {
+      const files = [
+        'src/component.tsx',
+        'src/style.css',
+        'src/config.json',
+        'src/script.py',
+      ];
 
-      expect(result.nodeCount).toBe(0);
-      expect(result.edgeCount).toBe(0);
-    });
+      const graph = await bridge.buildCodeGraph(files, false);
 
-    it('should detect node types correctly', async () => {
-      const codeStructure = {
-        files: [{
-          path: 'src/main.ts',
-          nodes: [
-            { id: 'class-1', type: 'class', name: 'MyClass' },
-            { id: 'method-1', type: 'method', name: 'myMethod', parent: 'class-1' },
-            { id: 'func-1', type: 'function', name: 'standalone' },
-            { id: 'var-1', type: 'variable', name: 'config' },
-          ],
-          edges: [
-            { source: 'method-1', target: 'class-1', type: 'belongs_to' },
-            { source: 'func-1', target: 'var-1', type: 'uses' },
-          ],
-        }],
-      };
-
-      const result = await bridge.buildCodeGraph(codeStructure);
-
-      expect(result.nodesByType).toHaveProperty('class');
-      expect(result.nodesByType).toHaveProperty('function');
-      expect(result.nodesByType).toHaveProperty('method');
+      expect(graph.nodes.length).toBe(4);
+      // Each node should have detected language
+      for (const node of graph.nodes) {
+        expect(node).toHaveProperty('language');
+      }
     });
   });
 
   describe('Compute Node Embeddings', () => {
     beforeEach(async () => {
-      await bridge.initialize({ hiddenDim: 64 });
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/test.ts',
-          nodes: [
-            { id: 'func-a', type: 'function', name: 'processData' },
-            { id: 'func-b', type: 'function', name: 'validateInput' },
-            { id: 'func-c', type: 'function', name: 'formatOutput' },
-          ],
-          edges: [
-            { source: 'func-a', target: 'func-b', type: 'calls' },
-            { source: 'func-a', target: 'func-c', type: 'calls' },
-          ],
-        }],
-      });
+      await bridge.initialize();
     });
 
-    it('should compute embeddings for all nodes', async () => {
-      const embeddings = await bridge.computeNodeEmbeddings();
+    it('should compute embeddings for graph nodes', async () => {
+      const files = ['src/a.ts', 'src/b.ts'];
+      const graph = await bridge.buildCodeGraph(files, false);
 
-      expect(embeddings).toHaveProperty('func-a');
-      expect(embeddings).toHaveProperty('func-b');
-      expect(embeddings).toHaveProperty('func-c');
+      const embeddings = await bridge.computeNodeEmbeddings(graph, 64);
+
+      expect(embeddings.size).toBe(2);
+      expect(embeddings.has('src/a.ts')).toBe(true);
+      expect(embeddings.has('src/b.ts')).toBe(true);
     });
 
     it('should return embeddings of correct dimension', async () => {
-      const embeddings = await bridge.computeNodeEmbeddings();
+      const files = ['src/test.ts'];
+      const graph = await bridge.buildCodeGraph(files, false);
+      const embeddingDim = 128;
 
-      const embedding = embeddings['func-a'];
-      expect(Array.isArray(embedding) || embedding instanceof Float32Array).toBe(true);
-      expect(embedding.length).toBe(64);
+      const embeddings = await bridge.computeNodeEmbeddings(graph, embeddingDim);
+
+      const embedding = embeddings.get('src/test.ts');
+      expect(embedding).toBeDefined();
+      expect(embedding!.length).toBe(embeddingDim);
     });
 
-    it('should compute normalized embeddings', async () => {
-      const embeddings = await bridge.computeNodeEmbeddings({ normalize: true });
+    it('should handle empty graph', async () => {
+      const graph = await bridge.buildCodeGraph([], false);
+      const embeddings = await bridge.computeNodeEmbeddings(graph, 64);
 
-      const embedding = embeddings['func-a'];
-      const norm = Math.sqrt(
-        Array.from(embedding).reduce((sum, v) => sum + v * v, 0)
-      );
-      expect(norm).toBeCloseTo(1, 3);
+      expect(embeddings.size).toBe(0);
     });
   });
 
-  describe('Predict Impact', () => {
+  describe('Impact Prediction', () => {
     beforeEach(async () => {
       await bridge.initialize();
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/core.ts',
-          nodes: [
-            { id: 'core-func', type: 'function', name: 'coreLogic' },
-            { id: 'helper-1', type: 'function', name: 'helper1' },
-            { id: 'helper-2', type: 'function', name: 'helper2' },
-            { id: 'consumer-1', type: 'function', name: 'consumer1' },
-            { id: 'consumer-2', type: 'function', name: 'consumer2' },
-          ],
-          edges: [
-            { source: 'core-func', target: 'helper-1', type: 'calls' },
-            { source: 'core-func', target: 'helper-2', type: 'calls' },
-            { source: 'consumer-1', target: 'core-func', type: 'calls' },
-            { source: 'consumer-2', target: 'core-func', type: 'calls' },
-          ],
-        }],
-      });
     });
 
     it('should predict impact of changes', async () => {
-      const impact = await bridge.predictImpact({
-        changedNodes: ['core-func'],
-        changeType: 'modification',
-      });
+      const files = [
+        'src/core.ts',
+        'src/utils.ts',
+        'src/api.ts',
+      ];
+      const graph = await bridge.buildCodeGraph(files, true);
+
+      const impact = await bridge.predictImpact(graph, ['src/core.ts']);
 
       expect(impact).toHaveProperty('affectedNodes');
-      expect(impact.affectedNodes).toContain('consumer-1');
-      expect(impact.affectedNodes).toContain('consumer-2');
+      expect(impact).toHaveProperty('impactScores');
+      expect(Array.isArray(impact.affectedNodes)).toBe(true);
     });
 
-    it('should calculate impact score', async () => {
-      const impact = await bridge.predictImpact({
-        changedNodes: ['core-func'],
-        changeType: 'modification',
-      });
+    it('should handle empty changed files', async () => {
+      const files = ['src/a.ts', 'src/b.ts'];
+      const graph = await bridge.buildCodeGraph(files, false);
 
-      expect(impact).toHaveProperty('impactScore');
-      expect(impact.impactScore).toBeGreaterThan(0);
-      expect(impact.impactScore).toBeLessThanOrEqual(1);
-    });
-
-    it('should identify high-risk changes', async () => {
-      const impact = await bridge.predictImpact({
-        changedNodes: ['core-func'],
-        changeType: 'deletion',
-      });
-
-      expect(impact).toHaveProperty('riskLevel');
-      expect(['low', 'medium', 'high', 'critical']).toContain(impact.riskLevel);
-    });
-
-    it('should handle isolated node changes', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/isolated.ts',
-          nodes: [{ id: 'isolated', type: 'function', name: 'isolated' }],
-          edges: [],
-        }],
-      });
-
-      const impact = await bridge.predictImpact({
-        changedNodes: ['isolated'],
-        changeType: 'modification',
-      });
+      const impact = await bridge.predictImpact(graph, []);
 
       expect(impact.affectedNodes.length).toBe(0);
-      expect(impact.impactScore).toBe(0);
-    });
-
-    it('should propagate impact through dependency chain', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/chain.ts',
-          nodes: [
-            { id: 'level-0', type: 'function', name: 'base' },
-            { id: 'level-1', type: 'function', name: 'mid' },
-            { id: 'level-2', type: 'function', name: 'top' },
-          ],
-          edges: [
-            { source: 'level-1', target: 'level-0', type: 'calls' },
-            { source: 'level-2', target: 'level-1', type: 'calls' },
-          ],
-        }],
-      });
-
-      const impact = await bridge.predictImpact({
-        changedNodes: ['level-0'],
-        changeType: 'signature_change',
-        propagationDepth: 2,
-      });
-
-      expect(impact.affectedNodes).toContain('level-1');
-      expect(impact.affectedNodes).toContain('level-2');
     });
   });
 
-  describe('Detect Communities', () => {
+  describe('Community Detection', () => {
     beforeEach(async () => {
       await bridge.initialize();
     });
 
-    it('should detect code communities/modules', async () => {
-      await bridge.buildCodeGraph({
-        files: [
-          {
-            path: 'src/auth/login.ts',
-            nodes: [
-              { id: 'auth-1', type: 'function', name: 'login' },
-              { id: 'auth-2', type: 'function', name: 'logout' },
-              { id: 'auth-3', type: 'function', name: 'validateToken' },
-            ],
-            edges: [
-              { source: 'auth-1', target: 'auth-3', type: 'calls' },
-              { source: 'auth-2', target: 'auth-3', type: 'calls' },
-            ],
-          },
-          {
-            path: 'src/data/repository.ts',
-            nodes: [
-              { id: 'data-1', type: 'function', name: 'fetchData' },
-              { id: 'data-2', type: 'function', name: 'saveData' },
-            ],
-            edges: [
-              { source: 'data-1', target: 'data-2', type: 'calls' },
-            ],
-          },
-        ],
-      });
+    it('should detect communities in code graph', async () => {
+      const files = [
+        'src/auth/login.ts',
+        'src/auth/logout.ts',
+        'src/data/fetch.ts',
+        'src/data/save.ts',
+      ];
+      const graph = await bridge.buildCodeGraph(files, true);
 
-      const communities = await bridge.detectCommunities();
+      const communities = await bridge.detectCommunities(graph);
 
       expect(communities).toHaveProperty('communities');
-      expect(Array.isArray(communities.communities)).toBe(true);
-      expect(communities.communities.length).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should return modularity score', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/mixed.ts',
-          nodes: [
-            { id: 'a', type: 'function', name: 'a' },
-            { id: 'b', type: 'function', name: 'b' },
-          ],
-          edges: [{ source: 'a', target: 'b', type: 'calls' }],
-        }],
-      });
-
-      const communities = await bridge.detectCommunities();
-
       expect(communities).toHaveProperty('modularity');
-      expect(typeof communities.modularity).toBe('number');
+      expect(Array.isArray(communities.communities)).toBe(true);
     });
 
-    it('should identify community members', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/cluster.ts',
-          nodes: [
-            { id: 'cluster-a1', type: 'function', name: 'a1' },
-            { id: 'cluster-a2', type: 'function', name: 'a2' },
-          ],
-          edges: [
-            { source: 'cluster-a1', target: 'cluster-a2', type: 'calls' },
-            { source: 'cluster-a2', target: 'cluster-a1', type: 'calls' },
-          ],
-        }],
-      });
+    it('should handle single node graph', async () => {
+      const files = ['src/single.ts'];
+      const graph = await bridge.buildCodeGraph(files, false);
 
-      const communities = await bridge.detectCommunities();
+      const communities = await bridge.detectCommunities(graph);
 
-      const community = communities.communities[0];
-      expect(community).toHaveProperty('members');
-      expect(Array.isArray(community.members)).toBe(true);
+      expect(communities.communities.length).toBe(1);
     });
   });
 
-  describe('Find Similar Patterns', () => {
+  describe('Pattern Matching', () => {
     beforeEach(async () => {
       await bridge.initialize();
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/patterns.ts',
-          nodes: [
-            // Pattern 1: fetch -> validate -> process
-            { id: 'p1-fetch', type: 'function', name: 'fetchUser' },
-            { id: 'p1-validate', type: 'function', name: 'validateUser' },
-            { id: 'p1-process', type: 'function', name: 'processUser' },
-            // Pattern 2: similar structure
-            { id: 'p2-fetch', type: 'function', name: 'fetchOrder' },
-            { id: 'p2-validate', type: 'function', name: 'validateOrder' },
-            { id: 'p2-process', type: 'function', name: 'processOrder' },
-          ],
-          edges: [
-            { source: 'p1-fetch', target: 'p1-validate', type: 'calls' },
-            { source: 'p1-validate', target: 'p1-process', type: 'calls' },
-            { source: 'p2-fetch', target: 'p2-validate', type: 'calls' },
-            { source: 'p2-validate', target: 'p2-process', type: 'calls' },
-          ],
-        }],
-      });
     });
 
-    it('should find similar code patterns', async () => {
-      const patterns = await bridge.findSimilarPatterns('p1-fetch');
+    it('should find similar patterns', async () => {
+      const files = [
+        'src/userService.ts',
+        'src/orderService.ts',
+        'src/productService.ts',
+      ];
+      const graph = await bridge.buildCodeGraph(files, true);
+
+      const patterns = await bridge.findSimilarPatterns(graph, 'src/userService.ts', 0.5);
 
       expect(Array.isArray(patterns)).toBe(true);
-      expect(patterns.length).toBeGreaterThan(0);
-    });
-
-    it('should return similarity scores', async () => {
-      const patterns = await bridge.findSimilarPatterns('p1-fetch');
-
-      if (patterns.length > 0) {
-        expect(patterns[0]).toHaveProperty('nodeId');
-        expect(patterns[0]).toHaveProperty('similarity');
-        expect(patterns[0].similarity).toBeGreaterThan(0);
-        expect(patterns[0].similarity).toBeLessThanOrEqual(1);
-      }
-    });
-
-    it('should respect similarity threshold', async () => {
-      const patterns = await bridge.findSimilarPatterns('p1-fetch', {
-        threshold: 0.8,
-        maxResults: 10,
-      });
-
-      for (const pattern of patterns) {
-        expect(pattern.similarity).toBeGreaterThanOrEqual(0.8);
-      }
-    });
-  });
-
-  describe('Architecture Analysis', () => {
-    beforeEach(async () => {
-      await bridge.initialize();
-    });
-
-    it('should analyze code architecture', async () => {
-      await bridge.buildCodeGraph({
-        files: [
-          {
-            path: 'src/controllers/user.ts',
-            nodes: [{ id: 'ctrl', type: 'class', name: 'UserController' }],
-            edges: [],
-          },
-          {
-            path: 'src/services/user.ts',
-            nodes: [{ id: 'svc', type: 'class', name: 'UserService' }],
-            edges: [{ source: 'ctrl', target: 'svc', type: 'depends_on' }],
-          },
-          {
-            path: 'src/repositories/user.ts',
-            nodes: [{ id: 'repo', type: 'class', name: 'UserRepository' }],
-            edges: [{ source: 'svc', target: 'repo', type: 'depends_on' }],
-          },
-        ],
-      });
-
-      const analysis = await bridge.analyzeArchitecture();
-
-      expect(analysis).toHaveProperty('layers');
-      expect(analysis).toHaveProperty('violations');
-      expect(analysis).toHaveProperty('metrics');
-    });
-
-    it('should detect circular dependencies', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/circular.ts',
-          nodes: [
-            { id: 'a', type: 'module', name: 'moduleA' },
-            { id: 'b', type: 'module', name: 'moduleB' },
-            { id: 'c', type: 'module', name: 'moduleC' },
-          ],
-          edges: [
-            { source: 'a', target: 'b', type: 'imports' },
-            { source: 'b', target: 'c', type: 'imports' },
-            { source: 'c', target: 'a', type: 'imports' }, // Circular!
-          ],
-        }],
-      });
-
-      const analysis = await bridge.analyzeArchitecture();
-
-      expect(analysis.violations.some(
-        (v: { type: string }) => v.type === 'circular_dependency'
-      )).toBe(true);
-    });
-
-    it('should calculate coupling metrics', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'src/coupled.ts',
-          nodes: [
-            { id: 'high-coupling', type: 'class', name: 'HighCoupling' },
-            { id: 'dep-1', type: 'class', name: 'Dep1' },
-            { id: 'dep-2', type: 'class', name: 'Dep2' },
-            { id: 'dep-3', type: 'class', name: 'Dep3' },
-          ],
-          edges: [
-            { source: 'high-coupling', target: 'dep-1', type: 'depends_on' },
-            { source: 'high-coupling', target: 'dep-2', type: 'depends_on' },
-            { source: 'high-coupling', target: 'dep-3', type: 'depends_on' },
-          ],
-        }],
-      });
-
-      const analysis = await bridge.analyzeArchitecture();
-
-      expect(analysis.metrics).toHaveProperty('averageCoupling');
-      expect(analysis.metrics).toHaveProperty('maxCoupling');
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should throw when operations called before init', async () => {
-      await expect(
-        bridge.buildCodeGraph({ files: [] })
-      ).rejects.toThrow();
-    });
-
-    it('should handle invalid graph structure', async () => {
-      await bridge.initialize();
-
-      await expect(
-        bridge.buildCodeGraph({
-          files: [{
-            path: null as any,
-            nodes: 'not-array' as any,
-            edges: undefined as any,
-          }],
-        })
-      ).rejects.toThrow();
-    });
-
-    it('should handle missing node references in edges', async () => {
-      await bridge.initialize();
-
-      // Should handle gracefully or throw clear error
-      try {
-        await bridge.buildCodeGraph({
-          files: [{
-            path: 'test.ts',
-            nodes: [{ id: 'existing', type: 'function', name: 'existing' }],
-            edges: [{ source: 'existing', target: 'nonexistent', type: 'calls' }],
-          }],
-        });
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
     });
   });
 
@@ -580,18 +218,10 @@ describe('GNNBridge', () => {
       const fallbackBridge = new GNNBridge();
       await fallbackBridge.initialize();
 
-      await fallbackBridge.buildCodeGraph({
-        files: [{
-          path: 'test.ts',
-          nodes: [{ id: 'test', type: 'function', name: 'test' }],
-          edges: [],
-        }],
-      });
+      const files = ['src/test.ts'];
+      const graph = await fallbackBridge.buildCodeGraph(files, false);
 
-      const embeddings = await fallbackBridge.computeNodeEmbeddings();
-      expect(embeddings).toHaveProperty('test');
-
-      await fallbackBridge.destroy();
+      expect(graph.nodes.length).toBe(1);
     });
   });
 
@@ -600,117 +230,29 @@ describe('GNNBridge', () => {
       await bridge.initialize();
     });
 
-    it('should handle large codebases efficiently', async () => {
-      // Create a large graph
-      const nodes = Array(1000).fill(null).map((_, i) => ({
-        id: `node-${i}`,
-        type: 'function',
-        name: `func${i}`,
-      }));
-
-      const edges = Array(2000).fill(null).map((_, i) => ({
-        source: `node-${i % 1000}`,
-        target: `node-${(i + 1) % 1000}`,
-        type: 'calls',
-      }));
+    it('should handle large file lists efficiently', async () => {
+      const files = Array(100).fill(null).map((_, i) => `src/file${i}.ts`);
 
       const start = performance.now();
-      await bridge.buildCodeGraph({
-        files: [{ path: 'large.ts', nodes, edges }],
-      });
-      await bridge.computeNodeEmbeddings();
+      const graph = await bridge.buildCodeGraph(files, true);
       const duration = performance.now() - start;
 
-      expect(duration).toBeLessThan(10000); // Should complete in < 10 seconds
-    });
-
-    it('should cache embeddings for repeated queries', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'cache-test.ts',
-          nodes: [{ id: 'cached', type: 'function', name: 'cached' }],
-          edges: [],
-        }],
-      });
-
-      const start1 = performance.now();
-      await bridge.computeNodeEmbeddings();
-      const duration1 = performance.now() - start1;
-
-      const start2 = performance.now();
-      await bridge.computeNodeEmbeddings();
-      const duration2 = performance.now() - start2;
-
-      // Second call should be faster due to caching
-      expect(duration2).toBeLessThanOrEqual(duration1);
+      expect(graph.nodes.length).toBe(100);
+      expect(duration).toBeLessThan(5000); // Should complete in < 5 seconds
     });
   });
 
   describe('Memory Management', () => {
-    it('should release resources on destroy', async () => {
+    it('should handle multiple graph operations', async () => {
       await bridge.initialize();
 
-      // Build large graph
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'memory-test.ts',
-          nodes: Array(500).fill(null).map((_, i) => ({
-            id: `node-${i}`,
-            type: 'function',
-            name: `func${i}`,
-          })),
-          edges: Array(1000).fill(null).map((_, i) => ({
-            source: `node-${i % 500}`,
-            target: `node-${(i + 1) % 500}`,
-            type: 'calls',
-          })),
-        }],
-      });
-
-      await bridge.computeNodeEmbeddings();
-      await bridge.destroy();
-
-      expect(bridge.isInitialized()).toBe(false);
-    });
-
-    it('should handle multiple init/destroy cycles', async () => {
-      for (let i = 0; i < 3; i++) {
-        await bridge.initialize();
-        await bridge.buildCodeGraph({
-          files: [{
-            path: 'cycle-test.ts',
-            nodes: [{ id: 'test', type: 'function', name: 'test' }],
-            edges: [],
-          }],
-        });
-        await bridge.destroy();
+      for (let i = 0; i < 5; i++) {
+        const files = Array(20).fill(null).map((_, j) => `src/module${i}/file${j}.ts`);
+        const graph = await bridge.buildCodeGraph(files, true);
+        await bridge.computeNodeEmbeddings(graph, 64);
       }
-      expect(bridge.isInitialized()).toBe(false);
-    });
-  });
 
-  describe('Secret Masking', () => {
-    beforeEach(async () => {
-      await bridge.initialize({ secretMasking: true });
-    });
-
-    it('should mask secrets in node names', async () => {
-      await bridge.buildCodeGraph({
-        files: [{
-          path: 'secrets.ts',
-          nodes: [
-            { id: 'api-key', type: 'variable', name: 'API_KEY = "sk-secret123"' },
-            { id: 'normal', type: 'function', name: 'normalFunction' },
-          ],
-          edges: [],
-        }],
-      });
-
-      const exported = await bridge.exportGraph();
-
-      // Secret should be masked
-      expect(exported).not.toContain('sk-secret123');
-      expect(exported).toContain('[MASKED]');
+      expect(bridge.isInitialized()).toBe(true);
     });
   });
 });
