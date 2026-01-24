@@ -25,7 +25,7 @@ npm install @claude-flow/plugin-code-intelligence
 ### CLI
 
 ```bash
-npx @claude-flow/cli plugins install code-intelligence
+npx claude-flow plugins install --name @claude-flow/plugin-code-intelligence
 ```
 
 ## Quick Start
