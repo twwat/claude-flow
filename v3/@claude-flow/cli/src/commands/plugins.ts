@@ -826,8 +826,9 @@ export const pluginsCommand: Command = {
     output.printList([
       `${output.highlight('list')}      - List plugins from IPFS registry`,
       `${output.highlight('search')}    - Search plugins by query`,
-      `${output.highlight('install')}   - Install a plugin from IPFS or local path`,
+      `${output.highlight('install')}   - Install a plugin from npm or local path`,
       `${output.highlight('uninstall')} - Remove an installed plugin`,
+      `${output.highlight('upgrade')}   - Upgrade an installed plugin`,
       `${output.highlight('toggle')}    - Enable or disable a plugin`,
       `${output.highlight('info')}      - Show detailed plugin information`,
       `${output.highlight('create')}    - Scaffold a new plugin project`,
