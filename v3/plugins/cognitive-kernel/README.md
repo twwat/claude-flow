@@ -226,11 +226,22 @@ interface CognitiveKernelConfig {
 
 ## Security Considerations
 
-- **Session Isolation**: Each cognitive session has isolated working memory with session-specific encryption keys
-- **Secure Clearing**: Working memory is securely cleared and overwritten at session end
-- **Prompt Injection Prevention**: Scaffold content is sanitized to remove potential prompt injection patterns
+- **Session Isolation**: Each cognitive session has isolated working memory with session-specific encryption keys (AES-256-GCM)
+- **Secure Clearing**: Working memory is securely cleared and overwritten (zero-fill) at session end
+- **Prompt Injection Prevention**: Scaffold content is sanitized to remove potential prompt injection patterns (special tokens, control sequences)
 - **Input Validation**: All inputs validated with Zod schemas with strict limits
 - **Rate Limiting**: Prevents abuse of cognitive resources
+- **Content Filtering**: Memory content scanned for sensitive data patterns before storage
+
+### WASM Security Constraints
+
+| Constraint | Value | Rationale |
+|------------|-------|-----------|
+| Memory Limit | 256MB | Sufficient for cognitive operations |
+| CPU Time per Operation | 10 seconds | Prevent runaway processing |
+| No Network Access | Enforced | Prevent data exfiltration |
+| Session Isolation | Enforced | Per-session WASM instances |
+| Secure Memory Clear | Zero-fill on exit | Prevent memory forensics |
 
 ### Input Limits
 
