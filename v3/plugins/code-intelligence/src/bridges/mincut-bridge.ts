@@ -411,7 +411,7 @@ export class MinCutBridge implements IMinCutBridge {
     weights: number[][],
     numPartitions: number,
     fixed: Map<number, number>,
-    constraints: SplitConstraints
+    _constraints: SplitConstraints
   ): number[] {
     const n = weights.length;
     const partition = new Array(n).fill(0);
