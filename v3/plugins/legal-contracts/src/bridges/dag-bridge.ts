@@ -460,7 +460,7 @@ export class DAGBridge implements IDAGBridge {
    */
   private async calculateSchedule(
     obligations: Obligation[],
-    nodeMap: Map<string, number>,
+    _nodeMap: Map<string, number>,
     edges: Array<{ from: string; to: string; type: EdgeType }>,
     projectEnd?: Date
   ): Promise<{
