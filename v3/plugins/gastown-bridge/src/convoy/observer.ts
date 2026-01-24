@@ -28,6 +28,7 @@ import type {
 import { BdBridge } from '../bridges/bd-bridge.js';
 import { ConvoyTracker } from './tracker.js';
 import { ConvoyError, GasTownErrorCode, GasTownError } from '../errors.js';
+import { LRUCache, DebouncedEmitter, BatchDeduplicator } from '../cache.js';
 
 // ============================================================================
 // Types
