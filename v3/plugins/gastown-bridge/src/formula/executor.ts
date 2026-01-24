@@ -398,7 +398,8 @@ class JsFallbackWasmLoader implements IWasmLoader {
       if (step.needs) {
         for (const dep of step.needs) {
           if (stepMap.has(dep)) {
-            adjacency.get(dep)!.push(step.id);
+            const adj = adjacency.get(dep);
+            if (adj) adj.push(step.id);
             inDegree.set(step.id, (inDegree.get(step.id) ?? 0) + 1);
           }
         }
@@ -407,11 +408,11 @@ class JsFallbackWasmLoader implements IWasmLoader {
 
     // Find all nodes with no incoming edges
     const queue: string[] = [];
-    for (const [stepId, degree] of inDegree) {
+    inDegree.forEach((degree, stepId) => {
       if (degree === 0) {
         queue.push(stepId);
       }
-    }
+    });
 
     const sorted: Step[] = [];
     while (queue.length > 0) {
