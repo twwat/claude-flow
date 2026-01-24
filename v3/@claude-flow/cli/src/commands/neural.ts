@@ -577,7 +577,11 @@ const exportCommand: Command = {
       await flushPatterns(); // Ensure all patterns are persisted
       const stats = await getIntelligenceStats();
 
-      // Build export data (secure - no secrets)
+      // SECURITY: Build export data - NEVER include secrets
+      // - API keys read from env but NEVER included in export
+      // - Uses ephemeral signing keys (generated per-export, not stored)
+      // - PII stripping enabled by default
+      // - Suspicious pattern content blocked
       const exportData = {
         type: 'learning-pattern',
         version: '1.0.0',
