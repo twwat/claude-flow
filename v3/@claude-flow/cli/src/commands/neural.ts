@@ -887,16 +887,38 @@ const importCommand: Command = {
         }
       }
 
-      // Extract patterns
+      // Extract patterns - handle both single model and model registry formats
       spinner.setText('Importing patterns...');
 
       const content = importData.pinataContent || importData;
-      let patterns = (content as { patterns?: Array<{ id: string; trigger: string; action: string; confidence: number; usageCount: number; category?: string }> }).patterns || [];
+      type PatternType = { id: string; trigger: string; action: string; confidence: number; usageCount: number; category?: string };
+      type ModelType = { id: string; category: string; patterns: PatternType[] };
 
-      // Filter by category if specified
-      if (categoryFilter) {
+      let patterns: PatternType[] = [];
+
+      // Check if this is a model registry (has models array)
+      const registry = content as { models?: ModelType[] };
+      if (registry.models && Array.isArray(registry.models)) {
+        // Model registry format - extract patterns from each model
+        for (const model of registry.models) {
+          if (!categoryFilter || model.category === categoryFilter || model.id.includes(categoryFilter)) {
+            for (const pattern of model.patterns || []) {
+              patterns.push({
+                ...pattern,
+                category: model.category, // Tag with model category
+              });
+            }
+          }
+        }
+      } else {
+        // Single model format - patterns at top level
+        patterns = (content as { patterns?: PatternType[] }).patterns || [];
+      }
+
+      // Filter by category if specified (additional filtering)
+      if (categoryFilter && patterns.length > 0) {
         patterns = patterns.filter(p =>
-          (p as { category?: string }).category === categoryFilter ||
+          p.category === categoryFilter ||
           p.trigger.includes(categoryFilter)
         );
       }
