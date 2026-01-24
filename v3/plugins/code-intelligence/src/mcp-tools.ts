@@ -816,8 +816,8 @@ function analyzeAPISurface(_graph: DependencyGraph): import('./types.js').APISur
 }
 
 async function detectDrift(
-  graph: DependencyGraph,
-  baseline: string
+  _graph: DependencyGraph,
+  _baseline: string
 ): Promise<import('./types.js').ArchitecturalDrift[]> {
   return [];
 }
