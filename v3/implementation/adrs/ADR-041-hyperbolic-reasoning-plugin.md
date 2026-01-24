@@ -5,6 +5,8 @@
 **Category:** Exotic SOTA
 **Author:** Plugin Architecture Team
 **Version:** 1.0.0
+**Deciders:** Plugin Architecture Team, Geometric ML Research Team
+**Supersedes:** None
 
 ## Context
 
