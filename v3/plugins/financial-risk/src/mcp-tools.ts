@@ -149,7 +149,7 @@ async function portfolioRiskHandler(
       return errorResult(`Invalid input: ${validation.error.message}`);
     }
 
-    const { holdings, riskMetrics, confidenceLevel, horizon } = validation.data;
+    const { holdings, confidenceLevel, horizon } = validation.data;
 
     // Initialize bridge
     const economyBridge = context?.bridge?.economy ?? new FinancialEconomyBridge();
