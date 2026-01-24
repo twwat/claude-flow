@@ -818,12 +818,22 @@ describe('Convoy', () => {
     });
 
     it('should include issues when blockers are closed', () => {
-      convoy.addIssues([
-        { id: 'i1', title: 'Blocker', status: 'closed', priority: 1 },
+      // Create convoy without autoComplete to avoid auto-transition when blocker closes
+      const manualConvoy = new Convoy({
+        id: 'manual',
+        name: 'Manual',
+        autoComplete: false,
+      });
+
+      manualConvoy.addIssues([
+        { id: 'i1', title: 'Blocker', status: 'open', priority: 1 },
         { id: 'i2', title: 'Was Blocked', status: 'open', blockedBy: ['i1'], priority: 2 },
       ]);
 
-      const ready = convoy.getReadyIssues();
+      // Close the blocker
+      manualConvoy.updateIssue('i1', { status: 'closed' });
+
+      const ready = manualConvoy.getReadyIssues();
 
       expect(ready).toHaveLength(1);
       expect(ready[0].id).toBe('i2');
