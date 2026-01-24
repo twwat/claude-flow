@@ -282,7 +282,7 @@ const trainCommand: Command = {
       const trajectoryStats = ruvectorStats?.trajectoryStats;
 
       // Benchmark if WASM was used
-      let benchmark = null;
+      let benchmark: Array<{ name: string; averageTimeMs: number; opsPerSecond: number }> | null = null;
       if (useWasm && wasmFeatures.length > 0) {
         try {
           spinner.setText('Running benchmark...');
