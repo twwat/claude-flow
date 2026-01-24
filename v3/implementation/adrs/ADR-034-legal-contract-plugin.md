@@ -284,6 +284,15 @@ Contract Types (Hyperbolic Embedding)
 - Designed as attorney augmentation, not replacement
 - Confidence scores indicate when human review is critical
 
+## Related ADRs
+
+| ADR | Relationship |
+|-----|--------------|
+| ADR-004: Plugin Architecture | Foundation - Defines plugin structure |
+| ADR-017: RuVector Integration | Dependency - Provides WASM packages |
+| ADR-041: Hyperbolic Reasoning | Related - Legal taxonomy navigation |
+| ADR-035: Code Intelligence | Related - Shares DAG analysis patterns |
+
 ## References
 
 - Model Rules of Professional Conduct: https://www.americanbar.org/groups/professional_responsibility/
