@@ -917,8 +917,11 @@ function getQueryInterpretation(patterns: QueryPattern[], slowQueries: number): 
 
 function generateMockBundleOptimizations(
   analysis?: string[],
-  targets?: { maxSize?: number; maxChunks?: number }
+  _targets?: { maxSize?: number; maxChunks?: number }
 ): BundleOptimization[] {
+  // targets can be used for target-aware optimization in future
+  void _targets;
+
   const optimizations: BundleOptimization[] = [];
   const analysisTypes = analysis ?? ['tree_shaking', 'duplicate_deps', 'large_modules'];
 
