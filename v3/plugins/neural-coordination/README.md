@@ -241,6 +241,14 @@ interface NeuralCoordinationConfig {
 4. **Federated Learning**: Coordinate model training across distributed agents
 5. **Market Simulation**: Agent-based modeling with realistic interactions
 
+## Related Plugins
+
+| Plugin | Description | Synergy |
+|--------|-------------|---------|
+| [@claude-flow/plugin-cognitive-kernel](https://www.npmjs.com/package/@claude-flow/plugin-cognitive-kernel) | Cognitive augmentation with working memory | Enhances individual agent reasoning within coordinated swarms |
+| [@claude-flow/plugin-quantum-optimizer](https://www.npmjs.com/package/@claude-flow/plugin-quantum-optimizer) | Quantum-inspired optimization | Optimizes task allocation and resource scheduling across agents |
+| [@claude-flow/plugin-hyperbolic-reasoning](https://www.npmjs.com/package/@claude-flow/plugin-hyperbolic-reasoning) | Hierarchical reasoning | Enables hierarchical agent organization and taxonomic coordination |
+
 ## License
 
 MIT
