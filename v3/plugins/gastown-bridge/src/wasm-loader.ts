@@ -1090,6 +1090,102 @@ export function resetWasmCache(): void {
   wasmAvailable = null;
 }
 
+/**
+ * Schedule idle-time preloading of WASM modules.
+ * Uses requestIdleCallback in browser, setImmediate in Node.
+ * Does not block the main thread.
+ *
+ * @example
+ * ```typescript
+ * // Call during app initialization
+ * scheduleIdlePreload();
+ * ```
+ */
+export function scheduleIdlePreload(): void {
+  // Register WASM modules for preloading
+  modulePreloader.register('gastown-formula-wasm', async () => {
+    return loadFormulaWasm();
+  }, 10); // High priority
+
+  modulePreloader.register('ruvector-gnn-wasm', async () => {
+    return loadGnnWasm();
+  }, 5); // Medium priority
+
+  // Start preloading during idle time
+  modulePreloader.startPreload().catch((error) => {
+    console.debug('[WASM Loader] Idle preload error:', error);
+  });
+}
+
+/**
+ * Get cache statistics for performance monitoring.
+ *
+ * @returns Object with cache stats for each cache type
+ *
+ * @example
+ * ```typescript
+ * const stats = getCacheStats();
+ * console.log(`Parse cache: ${stats.parseCache.entries} entries`);
+ * console.log(`Cook cache hit rate: ${stats.cookCache.hitRate}`);
+ * ```
+ */
+export function getCacheStats(): {
+  parseCache: { entries: number; sizeBytes: number; hitRate: number };
+  cookCache: { entries: number; sizeBytes: number; hitRate: number };
+  topoSortCache: { entries: number; sizeBytes: number; hitRate: number };
+  astCache: { entries: number; sizeBytes: number };
+  preloader: { queued: number; loaded: number; errors: number; isPreloading: boolean };
+  deduplicator: { parsePending: number; cookPending: number; graphPending: number };
+} {
+  const parseCacheStats = formulaParseCache.stats();
+  const cookCacheStats = cookCache.stats();
+  const topoSortCacheStats = topoSortCache.stats();
+  const astCacheStats = astCache.stats();
+  const preloaderStatus = modulePreloader.status();
+
+  return {
+    parseCache: {
+      entries: parseCacheStats.entries,
+      sizeBytes: parseCacheStats.sizeBytes,
+      hitRate: parseCacheStats.hitRate,
+    },
+    cookCache: {
+      entries: cookCacheStats.entries,
+      sizeBytes: cookCacheStats.sizeBytes,
+      hitRate: cookCacheStats.hitRate,
+    },
+    topoSortCache: {
+      entries: topoSortCacheStats.entries,
+      sizeBytes: topoSortCacheStats.sizeBytes,
+      hitRate: topoSortCacheStats.hitRate,
+    },
+    astCache: {
+      entries: astCacheStats.entries,
+      sizeBytes: astCacheStats.sizeBytes,
+    },
+    preloader: preloaderStatus,
+    deduplicator: {
+      parsePending: parseDedup.pendingCount,
+      cookPending: cookDedup.pendingCount,
+      graphPending: graphDedup.pendingCount,
+    },
+  };
+}
+
+/**
+ * Clear all result caches.
+ * Useful for testing or when formulas have been modified.
+ */
+export function clearAllCaches(): void {
+  formulaParseCache.clear();
+  cookCache.clear();
+  topoSortCache.clear();
+  astCache.clear();
+  parseDedup.clear();
+  cookDedup.clear();
+  graphDedup.clear();
+}
+
 // ============================================================================
 // Export Summary
 // ============================================================================
