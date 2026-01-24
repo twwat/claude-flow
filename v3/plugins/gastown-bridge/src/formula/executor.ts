@@ -981,40 +981,58 @@ export class FormulaExecutor extends EventEmitter {
   ): Promise<CookedFormula> {
     this.logger.debug('Cooking formula', { formulaName, varsCount: Object.keys(vars).length });
 
-    try {
-      // Determine if formulaName is content or a name to fetch
-      let formula: Formula;
+    // Generate cache key from formula name and vars
+    const varKeys = Object.keys(vars).sort();
+    const varValues = varKeys.map(k => vars[k]);
+    const cacheKey = hashKey([formulaName, ...varKeys, ...varValues]);
 
-      if (formulaName.includes('[') || formulaName.includes('=')) {
-        // Looks like TOML content, parse directly
-        formula = this.parseFormula(formulaName);
-      } else {
-        // Fetch formula from CLI
-        formula = await this.fetchFormula(formulaName);
-      }
-
-      // Validate required variables
-      this.validateVariables(formula, vars);
-
-      // Cook using WASM if available, otherwise JS fallback
-      const loader = this.wasmLoader.isInitialized() ? this.wasmLoader : this.jsFallback;
-      const cooked = loader.cookFormula(formula, vars);
-
-      this.logger.debug('Formula cooked successfully', {
-        formulaName,
-        wasmAccelerated: this.wasmLoader.isInitialized(),
-      });
-
-      return cooked;
-    } catch (error) {
-      if (error instanceof GasTownError) throw error;
-
-      throw FormulaError.cookFailed(
-        formulaName,
-        error instanceof Error ? error.message : String(error),
-        error as Error
-      );
+    // Check cook cache first
+    const cached = cookCache.get(cacheKey);
+    if (cached) {
+      this.logger.debug('Cook cache hit', { formulaName });
+      return cached;
     }
+
+    // Use deduplication for concurrent identical requests
+    return cookDedup.dedupe(cacheKey, async () => {
+      try {
+        // Determine if formulaName is content or a name to fetch
+        let formula: Formula;
+
+        if (formulaName.includes('[') || formulaName.includes('=')) {
+          // Looks like TOML content, parse directly
+          formula = this.parseFormula(formulaName);
+        } else {
+          // Fetch formula from CLI with deduplication
+          formula = await fetchDedup.dedupe(formulaName, () => this.fetchFormula(formulaName));
+        }
+
+        // Validate required variables
+        this.validateVariables(formula, vars);
+
+        // Cook using WASM if available, otherwise JS fallback
+        const loader = this.wasmLoader.isInitialized() ? this.wasmLoader : this.jsFallback;
+        const cooked = loader.cookFormula(formula, vars);
+
+        // Cache the result
+        cookCache.set(cacheKey, cooked);
+
+        this.logger.debug('Formula cooked successfully', {
+          formulaName,
+          wasmAccelerated: this.wasmLoader.isInitialized(),
+        });
+
+        return cooked;
+      } catch (error) {
+        if (error instanceof GasTownError) throw error;
+
+        throw FormulaError.cookFailed(
+          formulaName,
+          error instanceof Error ? error.message : String(error),
+          error as Error
+        );
+      }
+    });
   }
 
   /**
