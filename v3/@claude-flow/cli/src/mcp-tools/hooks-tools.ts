@@ -105,9 +105,12 @@ async function getMoERouter() {
   return moeRouter;
 }
 
-// Semantic Router - lazy loaded (pure JS, 47k routes/s)
+// Semantic Router - lazy loaded
+// Tries native VectorDb first (16k+ routes/s HNSW), falls back to pure JS (47k routes/s cosine)
 let semanticRouter: import('../ruvector/semantic-router.js').SemanticRouter | null = null;
+let nativeVectorDb: unknown = null;
 let semanticRouterInitialized = false;
+let routerBackend: 'native' | 'pure-js' | 'none' = 'none';
 
 // Pre-computed embeddings for common task patterns (cached)
 const TASK_PATTERN_EMBEDDINGS: Map<string, Float32Array> = new Map();
