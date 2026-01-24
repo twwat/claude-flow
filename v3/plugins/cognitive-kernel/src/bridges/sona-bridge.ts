@@ -145,7 +145,8 @@ export class SonaBridge {
     this._status = 'loading';
 
     try {
-      const wasmModule = await import('@ruvector/sona').catch(() => null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const wasmModule = await (import('@ruvector/sona' as any) as Promise<unknown>).catch(() => null);
 
       if (wasmModule) {
         this._module = wasmModule as unknown as SonaModule;
