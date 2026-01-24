@@ -12,7 +12,6 @@ import type {
   CodeChange,
   PredictedTest,
   TestFeedback,
-  TestExecutionPattern,
 } from '../types.js';
 
 /**
