@@ -578,31 +578,55 @@ function sanitizeMetadata(metadata: Record<string, unknown>): Record<string, unk
 }
 
 /**
- * Sanitize vars object
+ * Type for Var from types.ts
  */
-function sanitizeVars(vars: Record<string, {
+interface VarType {
   name: string;
   description?: string;
   default?: string;
   required?: boolean;
   pattern?: string;
   enum?: string[];
-}>): Record<string, {
-  name: string;
+}
+
+/**
+ * Sanitize vars object from raw zod output (may have optional name)
+ */
+function sanitizeVarsFromRaw(vars: Record<string, {
+  name?: string;
   description?: string;
   default?: string;
   required?: boolean;
   pattern?: string;
   enum?: string[];
-}> {
-  const result: Record<string, {
-    name: string;
-    description?: string;
-    default?: string;
-    required?: boolean;
-    pattern?: string;
-    enum?: string[];
-  }> = {};
+}>): Record<string, VarType> {
+  const result: Record<string, VarType> = {};
+
+  for (const [key, value] of Object.entries(vars)) {
+    // Skip sensitive fields
+    if (REDACTED_FIELDS.has(key) || SENSITIVE_FIELD_PATTERNS.some(p => p.test(key))) {
+      continue;
+    }
+
+    const sanitizedKey = sanitizeString(key, 64);
+    result[sanitizedKey] = {
+      name: sanitizeString(value.name ?? key, 64),
+      description: value.description ? sanitizeString(value.description, 256) : undefined,
+      default: value.default ? sanitizeString(value.default, 256) : undefined,
+      required: value.required,
+      pattern: value.pattern ? sanitizeString(value.pattern, 256) : undefined,
+      enum: value.enum?.map(e => sanitizeString(e, 64)).slice(0, 20),
+    };
+  }
+
+  return result;
+}
+
+/**
+ * Sanitize vars object (typed version)
+ */
+function sanitizeVars(vars: Record<string, VarType>): Record<string, VarType> {
+  const result: Record<string, VarType> = {};
 
   for (const [key, value] of Object.entries(vars)) {
     // Skip sensitive fields
