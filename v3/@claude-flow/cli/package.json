@@ -1,6 +1,6 @@
 {
   "name": "@claude-flow/cli",
-  "version": "3.0.0-alpha.176",
+  "version": "3.0.0-alpha.177",
   "type": "module",
   "description": "CLI module - command parsing, prompts, output formatting",
   "main": "dist/src/index.js",
@@ -56,7 +56,8 @@
     "@claude-flow/shared": "^3.0.0-alpha.1",
     "@noble/ed25519": "^2.1.0",
     "@ruvector/attention": "^0.1.4",
-    "@ruvector/learning-wasm": "^0.1.29"
+    "@ruvector/learning-wasm": "^0.1.29",
+    "@ruvector/sona": "^0.1.5"
   },
   "publishConfig": {
     "access": "public",
