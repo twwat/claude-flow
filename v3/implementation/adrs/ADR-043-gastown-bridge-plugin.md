@@ -660,15 +660,71 @@ export interface GasTownConfig {
 - **Cons**: 75k lines to port, losing Go performance
 - **Decision**: Too much effort, CLI bridge is sufficient
 
-### 2. WASM Compilation
-- **Pros**: Native browser/Node execution
-- **Cons**: Gas Town uses syscalls incompatible with WASM
-- **Decision**: Not technically feasible
+### 2. Direct Go→WASM Compilation
+- **Pros**: Reuse existing Go code
+- **Cons**: Gas Town uses syscalls incompatible with WASM (syscall.Flock, openInputTTY)
+- **Decision**: Not technically feasible for full codebase
 
-### 3. REST API Wrapper
+### 3. Pure TypeScript Computation
+- **Pros**: Simple, no Rust toolchain needed
+- **Cons**: 352x slower than WASM for formula operations
+- **Decision**: Rejected for performance-critical paths
+
+### 4. REST API Wrapper
 - **Pros**: Language-agnostic, could serve multiple clients
 - **Cons**: Gas Town has no built-in server, would need to build one
 - **Decision**: Defer to Gas Town team, use CLI for now
+
+### 5. Hybrid CLI + WASM (SELECTED)
+- **Pros**:
+  - CLI handles I/O operations that require `gt`/`bd`
+  - WASM provides 352x speedup for computation
+  - Best of both worlds: compatibility + performance
+  - WASM modules can be shared across plugins
+- **Cons**:
+  - Requires Rust toolchain for WASM builds
+  - Two codebases to maintain (TS + Rust)
+- **Decision**: Selected as optimal balance
+
+## WASM Architecture Rationale
+
+### Why WASM for Computation?
+
+Gas Town operations fall into two categories:
+
+| Category | Examples | Best Technology |
+|----------|----------|-----------------|
+| **I/O Operations** | Create bead, sync files, SQLite queries | CLI (`gt`, `bd`) |
+| **Computation** | Parse TOML, resolve deps, analyze graphs | WASM (352x faster) |
+
+### WASM Module Selection
+
+| Module | Source | Reuse Strategy |
+|--------|--------|----------------|
+| `gastown-formula-wasm` | New | Custom for Gas Town formulas |
+| `ruvector-gnn-wasm` | Existing | From ADR-035, graph operations |
+| `micro-hnsw-wasm` | Existing | From ADR-036, pattern search |
+| `ruvector-learning-wasm` | Existing | From ADR-037, optimization |
+
+### Data Flow
+
+```
+User Request → MCP Tool → Route Decision
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+              ▼               ▼               ▼
+         CLI Bridge      WASM Layer      Hybrid
+         (I/O ops)       (compute)      (both)
+              │               │               │
+              ▼               ▼               ▼
+         gt/bd CLI       WASM module    CLI → WASM
+              │               │               │
+              └───────────────┴───────────────┘
+                              │
+                              ▼
+                        MCP Response
+```
 
 ## References
 
