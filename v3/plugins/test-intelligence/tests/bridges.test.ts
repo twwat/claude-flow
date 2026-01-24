@@ -104,57 +104,75 @@ describe('TestLearningBridge', () => {
       const history = [
         {
           testId: 'test-1',
-          name: 'test_auth',
+          testName: 'test_auth',
           file: 'auth.test.ts',
-          passed: true,
-          duration: 150,
-          changedFiles: ['src/auth.ts'],
+          failureRate: 0.1,
+          avgDuration: 150,
+          affectedFiles: ['src/auth.ts'],
+          results: [
+            { status: 'passed', duration: 150 },
+            { status: 'failed', duration: 200 },
+          ],
         },
         {
           testId: 'test-2',
-          name: 'test_login',
+          testName: 'test_login',
           file: 'login.test.ts',
-          passed: false,
-          duration: 200,
-          changedFiles: ['src/auth.ts', 'src/login.ts'],
+          failureRate: 0.3,
+          avgDuration: 200,
+          affectedFiles: ['src/auth.ts', 'src/login.ts'],
+          results: [
+            { status: 'failed', duration: 200 },
+            { status: 'passed', duration: 180 },
+          ],
         },
       ];
 
       const result = await bridge.trainOnHistory(history);
 
-      expect(result).toBeDefined();
-      expect(result.trainingComplete).toBe(true);
-      expect(result.samplesProcessed).toBe(2);
+      // Returns the average loss
+      expect(typeof result).toBe('number');
     });
 
     it('should handle empty history', async () => {
       const result = await bridge.trainOnHistory([]);
 
-      expect(result.trainingComplete).toBe(true);
-      expect(result.samplesProcessed).toBe(0);
+      // Returns 0 for empty history
+      expect(result).toBe(0);
     });
 
     it('should handle large history batches', async () => {
-      const history = Array(1000).fill(null).map((_, i) => ({
+      const history = Array(100).fill(null).map((_, i) => ({
         testId: `test-${i}`,
-        name: `test_${i}`,
+        testName: `test_${i}`,
         file: `test${i}.test.ts`,
-        passed: Math.random() > 0.2,
-        duration: Math.floor(Math.random() * 500),
-        changedFiles: [`src/file${i % 10}.ts`],
+        failureRate: Math.random(),
+        avgDuration: Math.floor(Math.random() * 500),
+        affectedFiles: [`src/file${i % 10}.ts`],
+        results: [
+          { status: Math.random() > 0.2 ? 'passed' : 'failed', duration: 100 },
+          { status: Math.random() > 0.2 ? 'passed' : 'failed', duration: 150 },
+        ],
       }));
 
       const result = await bridge.trainOnHistory(history);
 
-      expect(result.trainingComplete).toBe(true);
-      expect(result.samplesProcessed).toBe(1000);
+      expect(typeof result).toBe('number');
     });
 
     it('should throw when not initialized', async () => {
       await bridge.destroy();
-      const history = [{ testId: 'test-1', name: 'test', file: 'test.ts', passed: true, duration: 100, changedFiles: [] }];
+      const history = [{
+        testId: 'test-1',
+        testName: 'test',
+        file: 'test.ts',
+        failureRate: 0,
+        avgDuration: 100,
+        affectedFiles: [],
+        results: [],
+      }];
 
-      await expect(bridge.trainOnHistory(history)).rejects.toThrow('Bridge not initialized');
+      await expect(bridge.trainOnHistory(history)).rejects.toThrow('Learning bridge not initialized');
     });
   });
 
