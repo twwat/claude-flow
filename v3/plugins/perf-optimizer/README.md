@@ -243,6 +243,34 @@ const rateLimits = {
 | Memory | Chrome Heap Snapshot, Node.js Heap |
 | Bundles | Webpack Stats, Vite Stats, Rollup |
 
+## Related Plugins
+
+| Plugin | Description | Use Case |
+|--------|-------------|----------|
+| [@claude-flow/plugin-code-intelligence](../code-intelligence) | Code analysis | Identify code causing performance issues |
+| [@claude-flow/plugin-test-intelligence](../test-intelligence) | Test optimization | Performance regression test selection |
+| [@claude-flow/plugin-financial-risk](../financial-risk) | Risk analysis | Trading system latency optimization |
+
 ## License
 
-MIT
+MIT License
+
+Copyright (c) 2026 Claude Flow
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
