@@ -358,6 +358,16 @@ Amplitude amplification for unstructured search. Classical implementation uses i
 ### Neutral
 - Complements classical solvers for specific problem classes
 
+## Related ADRs
+
+| ADR | Relationship |
+|-----|--------------|
+| ADR-004: Plugin Architecture | Foundation - Defines plugin structure |
+| ADR-017: RuVector Integration | Dependency - Provides WASM packages |
+| ADR-033: Financial Risk | Related - Portfolio optimization |
+| ADR-036: Test Intelligence | Related - Test selection optimization |
+| ADR-038: Neural Coordination | Related - Task scheduling |
+
 ## References
 
 - Quantum Annealing: https://arxiv.org/abs/cond-mat/0701277
