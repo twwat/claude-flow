@@ -1,6 +1,6 @@
 {
   "name": "@claude-flow/cli",
-  "version": "3.0.0-alpha.174",
+  "version": "3.0.0-alpha.175",
   "type": "module",
   "description": "CLI module - command parsing, prompts, output formatting",
   "main": "dist/src/index.js",
@@ -54,7 +54,9 @@
     "@claude-flow/mcp": "^3.0.0-alpha.8",
     "@claude-flow/plugin-gastown-bridge": "^0.1.0",
     "@claude-flow/shared": "^3.0.0-alpha.1",
-    "@noble/ed25519": "^2.1.0"
+    "@noble/ed25519": "^2.1.0",
+    "@ruvector/attention": "^0.1.4",
+    "@ruvector/learning-wasm": "^0.1.29"
   },
   "publishConfig": {
     "access": "public",
