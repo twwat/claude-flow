@@ -408,7 +408,8 @@ export class AttentionBridge implements IAttentionBridge {
     // Simple hash-based embedding (placeholder)
     for (let i = 0; i < text.length && i < this.embeddingDim; i++) {
       const charCode = text.charCodeAt(i);
-      embedding[i % this.embeddingDim] += charCode / 1000;
+      const idx = i % this.embeddingDim;
+      embedding[idx] = (embedding[idx] ?? 0) + charCode / 1000;
     }
 
     // Normalize
