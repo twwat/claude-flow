@@ -158,80 +158,134 @@ function generateSimpleEmbedding(text: string, dimension: number = 384): Float32
   return embedding;
 }
 
+// Task patterns used by both native and pure-JS routers
+const TASK_PATTERNS: Record<string, { keywords: string[]; agents: string[] }> = {
+  'security-task': {
+    keywords: ['authentication', 'security', 'auth', 'password', 'encryption', 'vulnerability', 'cve', 'audit'],
+    agents: ['security-architect', 'security-auditor', 'reviewer'],
+  },
+  'testing-task': {
+    keywords: ['test', 'testing', 'spec', 'coverage', 'unit test', 'integration test', 'e2e'],
+    agents: ['tester', 'reviewer'],
+  },
+  'api-task': {
+    keywords: ['api', 'endpoint', 'rest', 'graphql', 'route', 'handler', 'controller'],
+    agents: ['architect', 'coder', 'tester'],
+  },
+  'performance-task': {
+    keywords: ['performance', 'optimize', 'speed', 'memory', 'benchmark', 'profiling', 'bottleneck'],
+    agents: ['performance-engineer', 'coder', 'tester'],
+  },
+  'refactor-task': {
+    keywords: ['refactor', 'restructure', 'clean', 'organize', 'modular', 'decouple'],
+    agents: ['architect', 'coder', 'reviewer'],
+  },
+  'bugfix-task': {
+    keywords: ['bug', 'fix', 'error', 'issue', 'broken', 'crash', 'debug'],
+    agents: ['coder', 'tester', 'reviewer'],
+  },
+  'feature-task': {
+    keywords: ['feature', 'implement', 'add', 'new', 'create', 'build'],
+    agents: ['architect', 'coder', 'tester'],
+  },
+  'database-task': {
+    keywords: ['database', 'sql', 'query', 'schema', 'migration', 'orm'],
+    agents: ['architect', 'coder', 'tester'],
+  },
+  'frontend-task': {
+    keywords: ['frontend', 'ui', 'component', 'react', 'css', 'style', 'layout'],
+    agents: ['coder', 'reviewer', 'tester'],
+  },
+  'devops-task': {
+    keywords: ['deploy', 'ci', 'cd', 'pipeline', 'docker', 'kubernetes', 'infrastructure'],
+    agents: ['devops', 'coder', 'tester'],
+  },
+  'swarm-task': {
+    keywords: ['swarm', 'agent', 'coordinator', 'hive', 'mesh', 'topology'],
+    agents: ['swarm-specialist', 'coordinator', 'architect'],
+  },
+  'memory-task': {
+    keywords: ['memory', 'cache', 'store', 'vector', 'embedding', 'persistence'],
+    agents: ['memory-specialist', 'architect', 'coder'],
+  },
+};
+
+/**
+ * Get the semantic router with environment detection.
+ * Tries native VectorDb first (HNSW, 16k routes/s), falls back to pure JS (47k routes/s cosine).
+ */
 async function getSemanticRouter() {
-  if (!semanticRouter && !semanticRouterInitialized) {
-    semanticRouterInitialized = true;
-    try {
-      const { SemanticRouter } = await import('../ruvector/semantic-router.js');
-      semanticRouter = new SemanticRouter({ dimension: 384 });
+  if (semanticRouterInitialized) {
+    return { router: semanticRouter, backend: routerBackend, native: nativeVectorDb };
+  }
+  semanticRouterInitialized = true;
+
+  // STEP 1: Try native VectorDb from @ruvector/router (HNSW-backed)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const router = require('@ruvector/router');
+    if (router.VectorDb && router.DistanceMetric) {
+      const db = new router.VectorDb({
+        dimensions: 384,
+        distanceMetric: router.DistanceMetric.Cosine,
+        hnswM: 16,
+        hnswEfConstruction: 200,
+        hnswEfSearch: 100,
+      });
 
       // Initialize with task patterns
-      const patterns: Record<string, { keywords: string[]; agents: string[] }> = {
-        'security-task': {
-          keywords: ['authentication', 'security', 'auth', 'password', 'encryption', 'vulnerability', 'cve', 'audit'],
-          agents: ['security-architect', 'security-auditor', 'reviewer'],
-        },
-        'testing-task': {
-          keywords: ['test', 'testing', 'spec', 'coverage', 'unit test', 'integration test', 'e2e'],
-          agents: ['tester', 'reviewer'],
-        },
-        'api-task': {
-          keywords: ['api', 'endpoint', 'rest', 'graphql', 'route', 'handler', 'controller'],
-          agents: ['architect', 'coder', 'tester'],
-        },
-        'performance-task': {
-          keywords: ['performance', 'optimize', 'speed', 'memory', 'benchmark', 'profiling', 'bottleneck'],
-          agents: ['performance-engineer', 'coder', 'tester'],
-        },
-        'refactor-task': {
-          keywords: ['refactor', 'restructure', 'clean', 'organize', 'modular', 'decouple'],
-          agents: ['architect', 'coder', 'reviewer'],
-        },
-        'bugfix-task': {
-          keywords: ['bug', 'fix', 'error', 'issue', 'broken', 'crash', 'debug'],
-          agents: ['coder', 'tester', 'reviewer'],
-        },
-        'feature-task': {
-          keywords: ['feature', 'implement', 'add', 'new', 'create', 'build'],
-          agents: ['architect', 'coder', 'tester'],
-        },
-        'database-task': {
-          keywords: ['database', 'sql', 'query', 'schema', 'migration', 'orm'],
-          agents: ['architect', 'coder', 'tester'],
-        },
-        'frontend-task': {
-          keywords: ['frontend', 'ui', 'component', 'react', 'css', 'style', 'layout'],
-          agents: ['coder', 'reviewer', 'tester'],
-        },
-        'devops-task': {
-          keywords: ['deploy', 'ci', 'cd', 'pipeline', 'docker', 'kubernetes', 'infrastructure'],
-          agents: ['devops', 'coder', 'tester'],
-        },
-        'swarm-task': {
-          keywords: ['swarm', 'agent', 'coordinator', 'hive', 'mesh', 'topology'],
-          agents: ['swarm-specialist', 'coordinator', 'architect'],
-        },
-        'memory-task': {
-          keywords: ['memory', 'cache', 'store', 'vector', 'embedding', 'persistence'],
-          agents: ['memory-specialist', 'architect', 'coder'],
-        },
-      };
-
-      for (const [patternName, { keywords, agents }] of Object.entries(patterns)) {
-        const embeddings = keywords.map(kw => generateSimpleEmbedding(kw));
-        semanticRouter.addIntentWithEmbeddings(patternName, embeddings, { agents, keywords });
-
-        // Cache embeddings for keywords
-        keywords.forEach((kw, i) => {
-          TASK_PATTERN_EMBEDDINGS.set(kw, embeddings[i]);
-        });
+      for (const [patternName, { keywords, agents }] of Object.entries(TASK_PATTERNS)) {
+        for (const keyword of keywords) {
+          const embedding = generateSimpleEmbedding(keyword);
+          db.insert(`${patternName}:${keyword}`, embedding);
+          TASK_PATTERN_EMBEDDINGS.set(`${patternName}:${keyword}`, embedding);
+        }
       }
 
-    } catch {
-      semanticRouter = null;
+      nativeVectorDb = db;
+      routerBackend = 'native';
+      return { router: null, backend: routerBackend, native: nativeVectorDb };
     }
+  } catch {
+    // Native not available, try pure JS
   }
-  return semanticRouter;
+
+  // STEP 2: Fall back to pure JS SemanticRouter
+  try {
+    const { SemanticRouter } = await import('../ruvector/semantic-router.js');
+    semanticRouter = new SemanticRouter({ dimension: 384 });
+
+    for (const [patternName, { keywords, agents }] of Object.entries(TASK_PATTERNS)) {
+      const embeddings = keywords.map(kw => generateSimpleEmbedding(kw));
+      semanticRouter.addIntentWithEmbeddings(patternName, embeddings, { agents, keywords });
+
+      // Cache embeddings for keywords
+      keywords.forEach((kw, i) => {
+        TASK_PATTERN_EMBEDDINGS.set(kw, embeddings[i]);
+      });
+    }
+
+    routerBackend = 'pure-js';
+  } catch {
+    semanticRouter = null;
+    routerBackend = 'none';
+  }
+
+  return { router: semanticRouter, backend: routerBackend, native: nativeVectorDb };
+}
+
+/**
+ * Get router backend info for status display.
+ */
+function getRouterBackendInfo(): { backend: string; speed: string } {
+  switch (routerBackend) {
+    case 'native':
+      return { backend: 'native VectorDb (HNSW)', speed: '16k+ routes/s' };
+    case 'pure-js':
+      return { backend: 'pure JS (cosine)', speed: '47k routes/s' };
+    default:
+      return { backend: 'none', speed: 'N/A' };
+  }
 }
 
 // Flash Attention - lazy loaded
