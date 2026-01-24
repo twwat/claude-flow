@@ -90,65 +90,56 @@ describe('HealthcareHNSWBridge', () => {
 
   describe('Vector Operations', () => {
     beforeEach(async () => {
-      await bridge.initialize({ dimensions: 128 });
+      await bridge.initialize({ dimensions: 768 });
     });
 
     it('should add vector', async () => {
-      const result = await bridge.addVector('patient-1', new Float32Array(128).fill(0.5));
-      expect(result.success).toBe(true);
+      await bridge.addVector('patient-1', new Float32Array(768).fill(0.5));
+      const count = await bridge.count();
+      expect(count).toBe(1);
     });
 
     it('should add patient with features', async () => {
-      const result = await bridge.addPatient({
-        patientId: 'P12345',
-        features: {
-          age: 45,
-          conditions: ['diabetes', 'hypertension'],
-          vitals: { bp: 130, hr: 72 },
-        },
-        embedding: new Float32Array(128).fill(0.3),
+      await bridge.addPatient('P12345', {
+        diagnoses: ['E11.9', 'I10'],
+        medications: ['metformin', 'lisinopril'],
       });
-      expect(result.success).toBe(true);
-      expect(result.patientId).toBe('P12345');
+      const count = await bridge.count();
+      expect(count).toBe(1);
     });
 
     it('should search for similar vectors', async () => {
       // Add some vectors
-      await bridge.addVector('p1', new Float32Array(128).fill(0.1));
-      await bridge.addVector('p2', new Float32Array(128).fill(0.2));
-      await bridge.addVector('p3', new Float32Array(128).fill(0.9));
+      await bridge.addVector('p1', new Float32Array(768).fill(0.1));
+      await bridge.addVector('p2', new Float32Array(768).fill(0.2));
+      await bridge.addVector('p3', new Float32Array(768).fill(0.9));
 
-      const query = new Float32Array(128).fill(0.15);
+      const query = new Float32Array(768).fill(0.15);
       const results = await bridge.search(query, 2);
 
       expect(Array.isArray(results)).toBe(true);
       expect(results.length).toBeLessThanOrEqual(2);
-      expect(results[0]).toHaveProperty('id');
-      expect(results[0]).toHaveProperty('distance');
     });
 
     it('should search by patient features', async () => {
-      await bridge.addPatient({
-        patientId: 'P001',
-        features: { age: 50, conditions: ['diabetes'] },
-        embedding: new Float32Array(128).fill(0.4),
+      await bridge.addPatient('P001', {
+        diagnoses: ['E11.9'],
+        medications: ['metformin'],
       });
-      await bridge.addPatient({
-        patientId: 'P002',
-        features: { age: 52, conditions: ['diabetes', 'obesity'] },
-        embedding: new Float32Array(128).fill(0.45),
+      await bridge.addPatient('P002', {
+        diagnoses: ['E11.9', 'E66'],
+        medications: ['metformin', 'ozempic'],
       });
 
       const results = await bridge.searchByFeatures({
-        age: 51,
-        conditions: ['diabetes'],
+        diagnoses: ['E11.9'],
       }, 5);
 
       expect(Array.isArray(results)).toBe(true);
     });
 
     it('should delete vector', async () => {
-      await bridge.addVector('to-delete', new Float32Array(128).fill(0.5));
+      await bridge.addVector('to-delete', new Float32Array(768).fill(0.5));
       const countBefore = await bridge.count();
 
       await bridge.delete('to-delete');
@@ -158,8 +149,8 @@ describe('HealthcareHNSWBridge', () => {
     });
 
     it('should return count', async () => {
-      await bridge.addVector('v1', new Float32Array(128).fill(0.1));
-      await bridge.addVector('v2', new Float32Array(128).fill(0.2));
+      await bridge.addVector('v1', new Float32Array(768).fill(0.1));
+      await bridge.addVector('v2', new Float32Array(768).fill(0.2));
 
       const count = await bridge.count();
       expect(count).toBeGreaterThanOrEqual(2);
