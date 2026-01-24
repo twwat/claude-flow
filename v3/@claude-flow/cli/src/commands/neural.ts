@@ -8,21 +8,29 @@
 import type { Command, CommandContext, CommandResult } from '../types.js';
 import { output } from '../output.js';
 
-// Train subcommand - REAL training implementation
+// Train subcommand - REAL WASM training with RuVector
 const trainCommand: Command = {
   name: 'train',
-  description: 'Train neural patterns with WASM SIMD acceleration',
+  description: 'Train neural patterns with WASM SIMD acceleration (MicroLoRA + Flash Attention)',
   options: [
-    { name: 'pattern', short: 'p', type: 'string', description: 'Pattern type: coordination, optimization, prediction', default: 'coordination' },
+    { name: 'pattern', short: 'p', type: 'string', description: 'Pattern type: coordination, optimization, prediction, security, testing', default: 'coordination' },
     { name: 'epochs', short: 'e', type: 'number', description: 'Number of training epochs', default: '50' },
     { name: 'data', short: 'd', type: 'string', description: 'Training data file or inline JSON' },
     { name: 'model', short: 'm', type: 'string', description: 'Model ID to train' },
-    { name: 'learning-rate', short: 'l', type: 'number', description: 'Learning rate', default: '0.001' },
+    { name: 'learning-rate', short: 'l', type: 'number', description: 'Learning rate', default: '0.01' },
     { name: 'batch-size', short: 'b', type: 'number', description: 'Batch size', default: '32' },
+    { name: 'dim', type: 'number', description: 'Embedding dimension (max 256)', default: '256' },
+    { name: 'wasm', short: 'w', type: 'boolean', description: 'Use RuVector WASM acceleration', default: 'true' },
+    { name: 'flash', type: 'boolean', description: 'Enable Flash Attention (2.49x-7.47x speedup)', default: 'true' },
+    { name: 'moe', type: 'boolean', description: 'Enable Mixture of Experts routing', default: 'false' },
+    { name: 'hyperbolic', type: 'boolean', description: 'Enable hyperbolic attention for hierarchical patterns', default: 'false' },
+    { name: 'contrastive', type: 'boolean', description: 'Use contrastive learning (InfoNCE)', default: 'true' },
+    { name: 'curriculum', type: 'boolean', description: 'Enable curriculum learning', default: 'false' },
   ],
   examples: [
     { command: 'claude-flow neural train -p coordination -e 100', description: 'Train coordination patterns' },
-    { command: 'claude-flow neural train -d ./training-data.json', description: 'Train from file' },
+    { command: 'claude-flow neural train -d ./training-data.json --flash', description: 'Train from file with Flash Attention' },
+    { command: 'claude-flow neural train -p security --wasm --contrastive', description: 'Security patterns with contrastive learning' },
   ],
   action: async (ctx: CommandContext): Promise<CommandResult> => {
     const patternType = ctx.flags.pattern as string || 'coordination';
