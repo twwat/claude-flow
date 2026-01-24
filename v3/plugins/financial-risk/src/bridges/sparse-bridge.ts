@@ -203,7 +203,7 @@ export class MarketRegimeClassifier {
   /**
    * Classify current market regime
    */
-  classify(prices: number[], volumes?: number[]): { regime: MarketRegimeType; confidence: number } {
+  classify(prices: number[], _volumes?: number[]): { regime: MarketRegimeType; confidence: number } {
     if (prices.length < this.windowSize) {
       return { regime: 'sideways', confidence: 0.5 };
     }
