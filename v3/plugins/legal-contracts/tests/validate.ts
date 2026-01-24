@@ -133,7 +133,7 @@ async function main() {
     {
       baseDocument: sampleContract,
       compareDocument: comparisonContract,
-      comparisonMode: 'clause_by_clause',
+      comparisonMode: 'full',  // Valid options: 'structural', 'semantic', 'full'
       generateRedline: true,
     },
     context
