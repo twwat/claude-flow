@@ -184,7 +184,8 @@ export async function initializeTraining(config: TrainingConfig = {}): Promise<{
       try {
         const sona = await import('@ruvector/sona');
         const sonaRank = config.sonaRank || 4;
-        // SonaEngine constructor: (dim, rank, alpha, learningRate)
+        // SonaEngine constructor: (dim, rank, alpha, learningRate) - TypeScript types are wrong
+        // @ts-expect-error - SonaEngine accepts 4 positional args but types say 1
         sonaEngine = new sona.SonaEngine(dim, sonaRank, alpha, lr) as SonaEngineInstance;
         sonaAvailable = true;
         features.push(`SONA (${dim}-dim, rank-${sonaRank}, 624k learn/s)`);
