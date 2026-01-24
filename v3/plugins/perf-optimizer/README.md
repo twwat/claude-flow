@@ -1,6 +1,18 @@
 # @claude-flow/plugin-performance-optimizer
 
+[![npm version](https://img.shields.io/npm/v/@claude-flow/plugin-performance-optimizer.svg)](https://www.npmjs.com/package/@claude-flow/plugin-performance-optimizer)
+[![npm downloads](https://img.shields.io/npm/dm/@claude-flow/plugin-performance-optimizer.svg)](https://www.npmjs.com/package/@claude-flow/plugin-performance-optimizer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive performance optimization plugin combining sparse inference for efficient trace analysis with graph neural networks for dependency chain optimization. The plugin enables intelligent bottleneck detection, memory leak identification, N+1 query detection, and bundle size optimization while providing explainable recommendations based on historical performance patterns.
+
+## Features
+
+- **Bottleneck Detection**: Identify performance bottlenecks using GNN-based dependency analysis
+- **Memory Analysis**: Detect memory leaks, retention chains, and GC pressure points
+- **Query Optimization**: Detect N+1 queries, missing indexes, and slow joins
+- **Bundle Optimization**: Analyze and optimize JavaScript bundle size with tree shaking and code splitting
+- **Configuration Optimization**: Learn optimal configurations from workload patterns using SONA
 
 ## Installation
 
