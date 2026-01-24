@@ -285,13 +285,22 @@ Agent State --> SONA Encoding --> Attention Routing --> GNN Propagation
 
 ## Performance Targets
 
-| Metric | Target |
-|--------|--------|
-| Consensus convergence | <100 rounds for 100 agents |
-| Communication overhead | <10% of total compute |
-| Topology optimization | <1s for 1000 nodes |
-| Memory synchronization | <100ms eventual consistency |
-| Emergent protocol training | <1 hour for basic tasks |
+| Metric | Target | Baseline (Traditional) | Improvement |
+|--------|--------|------------------------|-------------|
+| Consensus convergence | <100 rounds for 100 agents | ~1000 rounds (naive) | 10x |
+| Communication overhead | <10% of total compute | ~30% (broadcast) | 3x |
+| Topology optimization | <1s for 1000 nodes | ~1min (static config) | 60x |
+| Memory synchronization | <100ms eventual consistency | ~1s (distributed DB) | 10x |
+| Emergent protocol training | <1 hour for basic tasks | N/A (hand-designed) | Novel |
+
+## Risk Assessment
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Emergent behavior instability | Medium | Medium | Fallback to rule-based, behavior bounds |
+| Coordination deadlock | Low | High | Timeout mechanisms, leader election |
+| Training compute costs | High | Medium | Pretrained protocols, transfer learning |
+| Interpretability gaps | Medium | Medium | Protocol visualization, logging |
 
 ## Emergent Communication
 
