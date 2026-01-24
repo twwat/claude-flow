@@ -298,12 +298,27 @@ Secrets are automatically detected and masked in search results:
 
 ### Input Validation
 
+All inputs are validated using Zod schemas:
 ```typescript
 // All inputs validated:
 - Query strings: 1-5000 characters
 - File paths: Maximum 500 characters, max 100 paths per request
 - Languages: Maximum 20 languages per request
 - topK: 1-1000 results
+- Git refs: Validated against safe patterns (no shell metacharacters)
+- Module size limits: 100-100000 LOC
+```
+
+### Rate Limiting
+
+```typescript
+const rateLimits = {
+  'code/semantic-search': { requestsPerMinute: 60, maxConcurrent: 5 },
+  'code/architecture-analyze': { requestsPerMinute: 10, maxConcurrent: 2 },
+  'code/refactor-impact': { requestsPerMinute: 20, maxConcurrent: 3 },
+  'code/split-suggest': { requestsPerMinute: 5, maxConcurrent: 1 },
+  'code/learn-patterns': { requestsPerMinute: 5, maxConcurrent: 1 }
+};
 ```
 
 ## Performance
