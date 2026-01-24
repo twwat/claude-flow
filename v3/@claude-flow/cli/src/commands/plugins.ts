@@ -47,28 +47,48 @@ const listCommand: Command = {
     const featured = ctx.flags.featured as boolean;
     const registryName = ctx.flags.registry as string;
 
-    // For installed-only, use local data (placeholder)
+    // For installed-only, read from local manifest
     if (installedOnly) {
       output.writeln();
       output.writeln(output.bold('Installed Plugins'));
       output.writeln(output.dim('─'.repeat(60)));
 
-      // TODO: Read from local installed plugins manifest
-      output.printTable({
-        columns: [
-          { key: 'name', header: 'Plugin', width: 38 },
-          { key: 'version', header: 'Version', width: 14 },
-          { key: 'type', header: 'Type', width: 12 },
-          { key: 'status', header: 'Status', width: 10 },
-        ],
-        data: [
-          { name: '@claude-flow/neural', version: '3.0.0', type: 'core', status: output.success('Active') },
-          { name: '@claude-flow/security', version: '3.0.0', type: 'command', status: output.success('Active') },
-          { name: '@claude-flow/embeddings', version: '3.0.0', type: 'core', status: output.success('Active') },
-        ],
-      });
+      try {
+        const manager = getPluginManager();
+        await manager.initialize();
+        const installed = await manager.getInstalled();
 
-      return { success: true };
+        if (installed.length === 0) {
+          output.writeln(output.dim('No plugins installed.'));
+          output.writeln();
+          output.writeln(output.dim('Run "claude-flow plugins list" to see available plugins'));
+          output.writeln(output.dim('Run "claude-flow plugins install -n <plugin>" to install'));
+          return { success: true };
+        }
+
+        output.printTable({
+          columns: [
+            { key: 'name', header: 'Plugin', width: 38 },
+            { key: 'version', header: 'Version', width: 14 },
+            { key: 'source', header: 'Source', width: 10 },
+            { key: 'status', header: 'Status', width: 10 },
+          ],
+          data: installed.map((p: InstalledPlugin) => ({
+            name: p.name,
+            version: p.version,
+            source: p.source,
+            status: p.enabled ? output.success('Enabled') : output.dim('Disabled'),
+          })),
+        });
+
+        output.writeln();
+        output.writeln(output.dim(`Plugins directory: ${manager.getPluginsDir()}`));
+
+        return { success: true, data: installed };
+      } catch (error) {
+        output.printError(`Failed to load installed plugins: ${String(error)}`);
+        return { success: false, exitCode: 1 };
+      }
     }
 
     // Discover registry via IPFS
