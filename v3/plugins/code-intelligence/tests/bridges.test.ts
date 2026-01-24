@@ -178,11 +178,11 @@ describe('GNNBridge', () => {
       ];
       const graph = await bridge.buildCodeGraph(files, true);
 
+      // detectCommunities returns Map<string, number> (nodeId -> communityId)
       const communities = await bridge.detectCommunities(graph);
 
-      expect(communities).toHaveProperty('communities');
-      expect(communities).toHaveProperty('modularity');
-      expect(Array.isArray(communities.communities)).toBe(true);
+      expect(communities).toBeInstanceOf(Map);
+      expect(communities.size).toBe(4);
     });
 
     it('should handle single node graph', async () => {
@@ -191,7 +191,8 @@ describe('GNNBridge', () => {
 
       const communities = await bridge.detectCommunities(graph);
 
-      expect(communities.communities.length).toBe(1);
+      expect(communities).toBeInstanceOf(Map);
+      expect(communities.size).toBe(1);
     });
   });
 
