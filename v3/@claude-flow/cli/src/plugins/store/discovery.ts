@@ -238,7 +238,7 @@ export class PluginDiscoveryService {
       totalPlugins: plugins.length,
       totalDownloads: plugins.reduce((sum, p) => sum + p.downloads, 0),
       totalAuthors: 1,
-      featured: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant', '@claude-flow/security', '@claude-flow/claims'],
+      featured: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant', '@claude-flow/security', '@claude-flow/claims', '@claude-flow/teammate-plugin'],
       trending: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant'],
       newest: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant'],
       official: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant', '@claude-flow/security', '@claude-flow/claims'],
