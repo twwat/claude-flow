@@ -1084,6 +1084,7 @@ export class PluginDiscoveryService {
       '@claude-flow/embeddings',
       '@claude-flow/neural',
       '@claude-flow/performance',
+      '@claude-flow/teammate-plugin',
       // Domain-specific plugins
       '@claude-flow/plugin-healthcare-clinical',
       '@claude-flow/plugin-financial-risk',
